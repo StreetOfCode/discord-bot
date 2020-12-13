@@ -1,0 +1,5 @@
+server_id:
+welcome_channel_id:
+test_member_id:
+db_connection_string: "host='localhost' dbname='discord_bot' user='USER' password='PASSWORD'"
+token:
