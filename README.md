@@ -2,12 +2,21 @@
 
 ## Setup
 
-Setup a PostgreSQL database. Run `init_db.sql`.
+Install [pipenv](https://pipenv.pypa.io/en/latest/install/).
 
-Copy `config.template.yml`:
+Run:
 
 ```
-cp config.template.yml config.yml
+pipenv shell
+pipenv install
+```
+
+Setup a PostgreSQL database. Run `init_db.sql`.
+
+Copy `.env.template`:
+
+```
+cp .env.template .env
 ```
 
 Fill in the missing values. Don't forget db `USER` and `PASSWORD`.

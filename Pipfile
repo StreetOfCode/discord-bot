@@ -6,9 +6,10 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-discord
-psycopg2
-pyyaml
+discord = "*"
+psycopg2 = "*"
+pyyaml = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.8"
