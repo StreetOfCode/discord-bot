@@ -51,7 +51,7 @@ def get_survey_question_id(message_id):
         f"SELECT survey_question_id FROM sent_survey_question WHERE message_id={message_id}"
     )
 
-    return cursor.fetchone()[0]
+    return cursor.fetchone()
 
 
 def get_answer_id(survey_question_id, emoji):
