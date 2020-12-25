@@ -62,8 +62,22 @@ async def welcome_member(client, member):
         db.add_sent_survey_question(member.id, question[0], message.id)
 
 
-async def on_answer(client, member, question_id, emoji):
+async def remove_reaction_on_answer(user_id, question_id, emoji):
     answer_id = db.get_answer_id(question_id, emoji)
+    db.remove_user_answer(user_id, question_id, answer_id)
+
+
+async def add_reaction_on_answer(client, member, question_id, emoji, message):
+    answer_id = db.get_answer_id(question_id, emoji)
+
+    # Check if user already answered this question
+    if (already_answer_id := db.get_answer_of_answered_survey_question(question_id, member.id)) is not None:
+        # Remove answer from db
+        db.remove_user_answer(member.id, question_id, already_answer_id[0])
+        # Remove reaction from answer
+        emoji_to_delete = db.get_emoji_from_survey_answer(already_answer_id[0])
+        await message.remove_reaction(emoji_to_delete, member)
+
     db.add_answer(member.id, question_id, answer_id)
 
     if db.are_all_survey_questions_answered(member.id):

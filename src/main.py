@@ -4,7 +4,7 @@ import db
 from discord.ext import commands
 
 from config import TOKEN
-from welcome import welcome_member, on_answer
+from welcome import welcome_member, add_reaction_on_answer, remove_reaction_on_answer
 from utils import get_server
 
 intents = discord.Intents.default()
@@ -46,7 +46,17 @@ async def on_raw_reaction_add(payload):
     if payload.member.id != guild.me.id:
         # If reaction is on welcome survey question
         if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
-            await on_answer(client, payload.member, question_id[0], payload.emoji)
+            channel = await client.fetch_channel(payload.channel_id)
+            message = await channel.fetch_message(payload.message_id)
+            await add_reaction_on_answer(client=client, member=payload.member, question_id=question_id[0], emoji=payload.emoji, message=message)
+
+@client.event
+async def on_raw_reaction_remove(payload):
+    guild = get_server(client)
+    if payload.user_id != guild.me.id:
+        # If reaction is on welcome survey question
+        if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
+            await remove_reaction_on_answer(user_id=payload.user_id, question_id=question_id[0], emoji=payload.emoji)
 
 
 client.run(TOKEN)

@@ -29,6 +29,13 @@ def get_survey_questions():
     return result
 
 
+def get_emoji_from_survey_answer(survey_answer_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT emoji FROM survey_answer WHERE survey_answer_id={survey_answer_id}"
+    )
+    return cursor.fetchone()[0]
+
 def add_sent_survey_question(user_id, survey_question_id, message_id):
     cursor = db.cursor()
     cursor.execute(
@@ -61,6 +68,23 @@ def get_answer_id(survey_question_id, emoji):
     )
 
     return cursor.fetchone()[0]
+
+
+def get_answer_of_answered_survey_question(survey_question_id, user_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT survey_answer_id FROM user_survey_answer WHERE survey_question_id={survey_question_id} AND user_id={user_id}"
+    )
+
+    return cursor.fetchone()
+
+
+def remove_user_answer(user_id, survey_question_id, survey_answer_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"DELETE FROM user_survey_answer WHERE user_id={user_id} AND survey_question_id={survey_question_id} AND survey_answer_id={survey_answer_id}"
+    )
+    db.commit()
 
 
 def are_all_survey_questions_answered(user_id):
