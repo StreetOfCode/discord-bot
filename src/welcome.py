@@ -62,10 +62,8 @@ async def welcome_member(client, member):
         db.add_sent_survey_question(member.id, question[0], message.id)
 
 
-async def on_answer(client, member, message_id, emoji):
-    question_id = db.get_survey_question_id(message_id)
+async def on_answer(client, member, question_id, emoji):
     answer_id = db.get_answer_id(question_id, emoji)
-
     db.add_answer(member.id, question_id, answer_id)
 
     if db.are_all_survey_questions_answered(member.id):

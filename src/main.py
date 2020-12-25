@@ -1,8 +1,9 @@
 import discord
+import db
+
 from discord.ext import commands
 
 from config import TOKEN
-from db import add_test
 from welcome import welcome_member, on_answer
 from utils import get_server
 
@@ -30,7 +31,7 @@ async def on_message(message):
         await welcome_member(client, message.author)
 
     if message.content.startswith("$test"):
-        add_test(message.content.split(" ")[1])
+        db.add_test(message.content.split(" ")[1])
 
 
 @client.event
@@ -43,7 +44,9 @@ async def on_member_join(member):
 async def on_raw_reaction_add(payload):
     guild = get_server(client)
     if payload.member.id != guild.me.id:
-        await on_answer(client, payload.member, payload.message_id, payload.emoji)
+        # If reaction is on welcome survey question
+        if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
+            await on_answer(client, payload.member, question_id[0], payload.emoji)
 
 
 client.run(TOKEN)
