@@ -1,10 +1,11 @@
 import discord
+
 import db
 
 from discord.ext import commands
 
-from config import TOKEN
-from welcome import welcome_member, add_reaction_on_answer, remove_reaction_on_answer
+from config import TOKEN, ROLE_FOR_NEW_MEMBER
+from welcome import welcome_member, add_reaction_on_survey_answer, remove_reaction_on_survey_answer
 from utils import get_server
 
 intents = discord.Intents.default()
@@ -24,19 +25,16 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith("$hello"):
-        await message.channel.send("Hello!")
-
+    # TODO REMOVE
     if message.content.startswith("/welcome"):
         await welcome_member(client, message.author)
-
-    if message.content.startswith("$test"):
-        db.add_test(message.content.split(" ")[1])
 
 
 @client.event
 async def on_member_join(member):
     print("Recognised that a member called " + member.name + " joined")
+    new_member_role = discord.utils.get(get_server(client).roles, name=ROLE_FOR_NEW_MEMBER)
+    await member.add_roles(new_member_role)
     await welcome_member(client, member)
 
 
@@ -44,19 +42,22 @@ async def on_member_join(member):
 async def on_raw_reaction_add(payload):
     guild = get_server(client)
     if payload.member.id != guild.me.id:
-        # If reaction is on welcome survey question (maybe first check if reaction is in correct channel)
-        if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
-            channel = await client.fetch_channel(payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
-            await add_reaction_on_answer(client=client, member=payload.member, question_id=question_id[0], emoji=payload.emoji, message=message)
+        # If reaction is on welcome survey question
+        if (survey_id := db.get_survey_id_from_user_survey_progress(payload.member.id, payload.channel_id)) is not None:
+            if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
+                channel = await client.fetch_channel(payload.channel_id)
+                message = await channel.fetch_message(payload.message_id)
+                await add_reaction_on_survey_answer(client=client, member=payload.member, survey_id=survey_id[0], question_id=question_id[0], emoji=payload.emoji, message=message)
+
 
 @client.event
 async def on_raw_reaction_remove(payload):
     guild = get_server(client)
     if payload.user_id != guild.me.id:
         # If reaction is on welcome survey question
-        if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
-            await remove_reaction_on_answer(user_id=payload.user_id, question_id=question_id[0], emoji=payload.emoji)
+        if db.get_survey_id_from_user_survey_progress(payload.user_id, payload.channel_id) is not None:
+            if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
+                await remove_reaction_on_survey_answer(user_id=payload.user_id, question_id=question_id[0], emoji=payload.emoji)
 
 
 client.run(TOKEN)
