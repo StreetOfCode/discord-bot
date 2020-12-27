@@ -4,12 +4,6 @@ from config import DB_CONNECTION_STRING
 db = psycopg2.connect(DB_CONNECTION_STRING)
 
 
-def add_test(value):
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO TEST(test) VALUES('" + value + "')")
-    db.commit()
-
-
 def get_survey_questions():
     questions_cursor = db.cursor()
     questions_cursor.execute("SELECT * FROM survey_question")
@@ -44,12 +38,44 @@ def add_sent_survey_question(user_id, survey_question_id, message_id):
     db.commit()
 
 
+def create_user_survey_progress(survey_id, user_id, channel_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"INSERT INTO user_survey_progress(survey_id, user_id, channel_id) VALUES({survey_id}, {user_id}, {channel_id})"
+    )
+    db.commit()
+
+
+def finish_user_survey_progress(survey_id, user_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"UPDATE user_survey_progress SET status='FINISHED' WHERE survey_id={survey_id} AND user_id={user_id}"
+    )
+    db.commit()
+
+
 def add_answer(user_id, survey_question_id, survey_answer_id):
     cursor = db.cursor()
     cursor.execute(
         f"INSERT INTO user_survey_answer(user_id, survey_question_id, survey_answer_id) VALUES({user_id}, {survey_question_id}, {survey_answer_id})"
     )
     db.commit()
+
+
+def get_survey_intro_message(survey_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT survey_intro_message from survey WHERE survey_id={survey_id}"
+    )
+    return cursor.fetchone()[0]
+
+
+def get_survey_receive_role(survey_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT receive_role_after_finish from survey WHERE survey_id={survey_id}"
+    )
+    return cursor.fetchone()
 
 
 def get_survey_question_id(message_id):
@@ -60,6 +86,14 @@ def get_survey_question_id(message_id):
 
     return cursor.fetchone()
 
+
+def get_survey_id_from_user_survey_progress(user_id, channel_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT survey_id FROM user_survey_progress WHERE user_id={user_id} AND channel_id={channel_id}"
+    )
+
+    return cursor.fetchone()
 
 def get_answer_id(survey_question_id, emoji):
     cursor = db.cursor()
