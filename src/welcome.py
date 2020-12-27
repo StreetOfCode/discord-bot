@@ -40,16 +40,10 @@ async def welcome_member(client, member):
     channel = get_channel(client, TEST_CHANNEL_ID)
     await send_welcome_message(channel, member)
 
-    # embed = discord.Embed(title="Author of the message:", colour=discord.Colour(0x3e038c))
-
-    # embed.add_field(name=f"Member ID:", value="123456789", inline=False)
-    # embed.add_field(name=f"User Status:", value="online", inline=False)
-    # embed.add_field(name=f"User Creation Time:", value="2017-06-14 19:28:07", inline=False)
-
     questions = db.get_survey_questions()
     for question, answers in questions:
         position_embed = discord.Embed(
-            title=question[1], colour=discord.Colour(0xFFFF00)
+            title=question[2], colour=discord.Colour(0xFFFF00)
         )
         for (_, _, _, text, emoji) in answers:
             position_embed.add_field(name=text, value=emoji, inline=True)

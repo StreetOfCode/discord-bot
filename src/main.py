@@ -44,7 +44,7 @@ async def on_member_join(member):
 async def on_raw_reaction_add(payload):
     guild = get_server(client)
     if payload.member.id != guild.me.id:
-        # If reaction is on welcome survey question
+        # If reaction is on welcome survey question (maybe first check if reaction is in correct channel)
         if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
             channel = await client.fetch_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
