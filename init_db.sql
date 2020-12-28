@@ -60,7 +60,7 @@ CREATE TABLE user_survey_answer(
 -------------------  WELCOME SURVEY  ---------------------
 
 INSERT INTO survey(survey_info, survey_intro_message, receive_role_after_finish)
-VALUES ('welcome survey', 'Ahoj, ja som Street of Code bot a chcem sa ťa spýtať pár otázok. Tvoje odpovede budú anonymné. Cieľom tohto dotazníka je zistiť pár základných informácií. Keď vyplníš celý dotazník, tak získaš práva, aby si mohol alebo mohla vidieť všetky ostatné kanály v Discorde. Ďakujem :)', 'member');
+VALUES ('welcome survey', E'Ahoj, ja som Street of Code bot a chcem sa ťa opýtať pár otázok. Tvoje odpovede budú anonymné.\n\nCieľom tohto dotazníka je zistiť pár základných informácií. Keď vyplníš celý dotazník, tak získaš práva, aby si mohol alebo mohla vidieť všetky ostatné kanály v Discorde.\n\nSmajlíky ber s prosím s rezervou. Ďakujem :)', 'member');
 
 
 INSERT INTO survey_question(survey_id, text)
