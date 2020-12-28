@@ -43,11 +43,11 @@ async def on_raw_reaction_add(payload):
     guild = get_server(client)
     if payload.member.id != guild.me.id:
         # If reaction is on welcome survey question
-        if (survey_id := db.get_survey_id_from_user_survey_progress(payload.member.id, payload.channel_id)) is not None:
-            if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
+        if (survey_id := db.get_survey_id_from_user_survey_progress_or_none(payload.member.id, payload.channel_id)) is not None:
+            if (question_id := db.get_survey_question_id_or_none(payload.message_id)) is not None:
                 channel = await client.fetch_channel(payload.channel_id)
                 message = await channel.fetch_message(payload.message_id)
-                await add_reaction_on_survey_answer(client=client, member=payload.member, survey_id=survey_id[0], question_id=question_id[0], emoji=payload.emoji, message=message)
+                await add_reaction_on_survey_answer(client=client, member=payload.member, survey_id=survey_id, question_id=question_id, emoji=payload.emoji, message=message)
 
 
 @client.event
@@ -55,9 +55,9 @@ async def on_raw_reaction_remove(payload):
     guild = get_server(client)
     if payload.user_id != guild.me.id:
         # If reaction is on welcome survey question
-        if db.get_survey_id_from_user_survey_progress(payload.user_id, payload.channel_id) is not None:
-            if (question_id := db.get_survey_question_id(payload.message_id)) is not None:
-                await remove_reaction_on_survey_answer(user_id=payload.user_id, question_id=question_id[0], emoji=payload.emoji)
+        if db.get_survey_id_from_user_survey_progress_or_none(payload.user_id, payload.channel_id) is not None:
+            if (question_id := db.get_survey_question_id_or_none(payload.message_id)) is not None:
+                await remove_reaction_on_survey_answer(user_id=payload.user_id, question_id=question_id, emoji=payload.emoji)
 
 
 client.run(TOKEN)
