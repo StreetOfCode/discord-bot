@@ -40,7 +40,8 @@ CREATE TABLE survey_answer(
   survey_question_id INT REFERENCES survey_question(survey_question_id) ON DELETE CASCADE NOT NULL,
   number INT NOT NULL,
   text TEXT NOT NULL,
-  emoji TEXT NOT NULL
+  emoji TEXT NOT NULL,
+  alias TEXT DEFAULT NULL UNIQUE
 );
 
 CREATE TABLE sent_survey_question(
@@ -61,7 +62,7 @@ CREATE TABLE user_survey_answer(
 -------------------  WELCOME SURVEY  ---------------------
 
 INSERT INTO survey(survey_info, survey_intro_message, receive_role_after_finish)
-VALUES ('welcome survey', E'Ahoj, ja som Street of Code bot a chcem sa ťa opýtať pár otázok. Tvoje odpovede budú anonymné.\n\nCieľom tohto dotazníka je zistiť pár základných informácií. Keď vyplníš celý dotazník, tak získaš práva, aby si mohol alebo mohla vidieť všetky ostatné kanály v Discorde.\n\nSmajlíky ber s prosím s rezervou. Ďakujem :)', 'member');
+VALUES ('welcome survey', E'Ahoj, ja som Street of Code bot a chcem sa ťa opýtať pár otázok. Tvoje odpovede vidia iba admini.\n\nCieľom tohto dotazníka je zistiť pár základných informácií. Keď vyplníš celý dotazník, tak získaš práva, aby si mohol alebo mohla vidieť všetky ostatné kanály v Discorde.\n\nSmajlíky ber s prosím s rezervou. Ďakujem :)', 'member');
 
 
 INSERT INTO survey_question(survey_id, text, is_multiple_choice)
@@ -104,8 +105,8 @@ INSERT INTO survey_question(survey_id, text, is_multiple_choice)
 VALUES(1, 'Počúvaš naše podcasty?', FALSE);
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(4, 1, 'Počul/a som jednu alebo dve epizódy', '🙂');
-INSERT INTO survey_answer(survey_question_id, number, text, emoji)
-VALUES(4, 2, 'Viac ako 2 epizódy', '😋');
+INSERT INTO survey_answer(survey_question_id, number, text, emoji, alias)
+VALUES(4, 2, 'Viac ako 2 epizódy', '😋', 'podcast-fan');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(4, 3, 'Zatiaľ nie', '🥲');
 
@@ -122,7 +123,7 @@ VALUES(5, 4, 'Kurzy o programovaní', '🎥');
 
 INSERT INTO survey_question(survey_id, text, is_multiple_choice)
 VALUES(1, 'Môžeme ti v budúcnosti posielať takéto krátke dotazníky?', FALSE);
-INSERT INTO survey_answer(survey_question_id, number, text, emoji)
-VALUES(6, 1, 'Áno', '👍');
+INSERT INTO survey_answer(survey_question_id, number, text, emoji, alias)
+VALUES(6, 1, 'Áno', '👍', 'survey-fan');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(6, 2, 'Nie, ďakujem', '👎');
