@@ -52,12 +52,12 @@ async def send_next_question(channel, member):
         title=question[2], description=description, colour=discord.Colour(0xFFFF00)
     )
 
-    for (_, _, _, text, emoji) in answers:
+    for (_, _, _, text, emoji, _) in answers:
         position_embed.add_field(name=text, value=emoji, inline=True)
 
     message = await channel.send(embed=position_embed)
 
-    for (_, _, _, _, emoji) in answers:
+    for (_, _, _, _, emoji, _) in answers:
         await message.add_reaction(emoji=emoji)
 
     db.add_sent_survey_question(member.id, question[0], message.id)
