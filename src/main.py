@@ -11,7 +11,7 @@ from welcome import (
     add_reaction_on_survey_answer,
     remove_reaction_on_survey_answer,
 )
-from utils import get_server
+from utils import get_server, is_admin, get_role
 
 intents = discord.Intents.default()
 intents.members = True
@@ -27,14 +27,12 @@ async def send_welcome_survey_command(context):
     Also it gives them old_member role
     """
     sent_to = []
-    if ADMIN_ROLE in [role.name for role in context.author.roles]:
-        users_that_started_survey = db.get_all_users_from_survey_progress()
+    if is_admin(context.author):
+        users_that_started_survey = db.get_all_user_ids_from_survey_progress()
+        old_member_role = get_role(client, OLD_MEMBER_ROLE)
         for member in get_server(client).members:
             if member != client.user and member.id not in users_that_started_survey:
-                if ADMIN_ROLE not in [role.name for role in member.roles]:
-                    old_member_role = discord.utils.get(
-                        get_server(client).roles, name=OLD_MEMBER_ROLE
-                    )
+                if not is_admin(member):
                     await member.add_roles(old_member_role)
                     await welcome_member(client, member)
                     sent_to.append(member.display_name)
@@ -65,7 +63,7 @@ async def on_message(message):
 @client.event
 async def on_member_join(member):
     print("Recognised that a member called " + member.name + " joined")
-    new_member_role = discord.utils.get(get_server(client).roles, name=NEW_MEMBER_ROLE)
+    new_member_role = get_role(client, NEW_MEMBER_ROLE)
     await member.add_roles(new_member_role)
     await welcome_member(client, member)
 
