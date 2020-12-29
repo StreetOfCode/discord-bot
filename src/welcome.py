@@ -4,6 +4,8 @@ import db
 from utils import get_server
 from config import ROLE_FOR_NEW_MEMBER, WELCOME_SURVEY_ID
 
+MULTIPLE_CHOICE_EMBED_DESCRIPTION = " Môžeš zvoliť viacero odpovedí!"
+
 
 async def send_welcome_message(channel, member, welcome_message):
     embed = discord.Embed(
@@ -42,7 +44,13 @@ async def send_next_question(channel, member):
     if question is None or answers is None:
         return
 
-    position_embed = discord.Embed(title=question[2], colour=discord.Colour(0xFFFF00))
+    is_multiple_choice_question = question[3]
+    description = MULTIPLE_CHOICE_EMBED_DESCRIPTION if is_multiple_choice_question else ""
+
+    position_embed = discord.Embed(
+        title=question[2], description=description, colour=discord.Colour(0xFFFF00)
+    )
+
     for (_, _, _, text, emoji) in answers:
         position_embed.add_field(name=text, value=emoji, inline=True)
 
@@ -65,12 +73,11 @@ async def add_reaction_on_survey_answer(
 ):
     answer_id = db.get_answer_id(question_id, emoji)
 
-    # Check if user have already answered this question
-    if (
-        already_answer_id := db.get_answer_of_answered_survey_question_or_none(
-            question_id, member.id
-        )
-    ) is not None:
+    is_multiple_choice_question = db.is_multiple_choice_survey_question(question_id)
+    already_answer_id = db.get_answer_of_answered_survey_question_or_none(
+        question_id, member.id
+    )
+    if not is_multiple_choice_question and already_answer_id is not None:
         # Remove answer from db
         db.remove_user_answer(member.id, question_id, already_answer_id)
         # Remove reaction from answer
