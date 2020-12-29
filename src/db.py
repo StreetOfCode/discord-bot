@@ -4,6 +4,14 @@ from config import DB_CONNECTION_STRING
 db = psycopg2.connect(DB_CONNECTION_STRING)
 
 
+def is_multiple_choice_survey_question(question_id):
+    cursor = db.cursor()
+    cursor.execute(f"SELECT is_multiple_choice FROM survey_question WHERE survey_question_id={question_id}")
+
+    question = cursor.fetchone()
+    return question[0] if question is not None else False
+
+
 def get_survey_questions():
     questions_cursor = db.cursor()
     questions_cursor.execute("SELECT * FROM survey_question")

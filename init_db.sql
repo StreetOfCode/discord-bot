@@ -31,7 +31,8 @@ CREATE TABLE user_survey_progress(
 CREATE TABLE survey_question(
     survey_question_id SERIAL PRIMARY KEY,
     survey_id INT REFERENCES survey(survey_id) ON DELETE CASCADE NOT NULL,
-    text TEXT NOT NULL
+    text TEXT NOT NULL,
+    is_multiple_choice BOOLEAN NOT NULL
 );
 
 CREATE TABLE survey_answer(
@@ -63,8 +64,8 @@ INSERT INTO survey(survey_info, survey_intro_message, receive_role_after_finish)
 VALUES ('welcome survey', E'Ahoj, ja som Street of Code bot a chcem sa ťa opýtať pár otázok. Tvoje odpovede budú anonymné.\n\nCieľom tohto dotazníka je zistiť pár základných informácií. Keď vyplníš celý dotazník, tak získaš práva, aby si mohol alebo mohla vidieť všetky ostatné kanály v Discorde.\n\nSmajlíky ber s prosím s rezervou. Ďakujem :)', 'member');
 
 
-INSERT INTO survey_question(survey_id, text)
-VALUES(1, 'Pohlavie');
+INSERT INTO survey_question(survey_id, text, is_multiple_choice)
+VALUES(1, 'Pohlavie', FALSE);
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(1, 1, 'Muž', '🦸‍♂️');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
@@ -75,8 +76,8 @@ INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(1, 4, 'Nechcem odpovedať', '❔');
 
 
-INSERT INTO survey_question(survey_id, text)
-VALUES(1, 'Vek');
+INSERT INTO survey_question(survey_id, text, is_multiple_choice)
+VALUES(1, 'Vek', FALSE);
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(2, 1, '0 - 17', '👶');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
@@ -90,8 +91,8 @@ VALUES(2, 5, '35 a viac', '👨‍🦲');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(2, 6, 'Nechcem odpovedať', '❔');
 
-INSERT INTO survey_question(survey_id, text)
-VALUES(1, 'Ako si na tom s programovaním?');
+INSERT INTO survey_question(survey_id, text, is_multiple_choice)
+VALUES(1, 'Ako si na tom s programovaním?', FALSE);
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(3, 1, 'Chcem sa naučiť programovať', '🤓');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
@@ -99,8 +100,8 @@ VALUES(3, 2, 'Už viem niečo naprogramovať', '🥳');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(3, 3, 'Pracujem ako programátor', '😎');
 
-INSERT INTO survey_question(survey_id, text)
-VALUES(1, 'Počúvaš naše podcasty?');
+INSERT INTO survey_question(survey_id, text, is_multiple_choice)
+VALUES(1, 'Počúvaš naše podcasty?', FALSE);
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(4, 1, 'Počul/a som jednu alebo dve epizódy', '🙂');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
@@ -108,8 +109,8 @@ VALUES(4, 2, 'Viac ako 2 epizódy', '😋');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(4, 3, 'Zatiaľ nie', '🥲');
 
-INSERT INTO survey_question(survey_id, text)
-VALUES(1, 'Aký obsah by si od nás privítal/a najčastejšie?');
+INSERT INTO survey_question(survey_id, text, is_multiple_choice)
+VALUES(1, 'Aký obsah by si od nás privítal/a najčastejšie?', TRUE);
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(5, 1, 'Podcasty', '🎙️');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
@@ -119,8 +120,8 @@ VALUES(5, 3, 'Články o programovaná', '📝');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(5, 4, 'Kurzy o programovaní', '🎥');
 
-INSERT INTO survey_question(survey_id, text)
-VALUES(1, 'Môžeme ti v budúcnosti posielať takéto krátke dotazníky?');
+INSERT INTO survey_question(survey_id, text, is_multiple_choice)
+VALUES(1, 'Môžeme ti v budúcnosti posielať takéto krátke dotazníky?', FALSE);
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(6, 1, 'Áno', '👍');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
