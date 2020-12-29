@@ -6,7 +6,9 @@ db = psycopg2.connect(DB_CONNECTION_STRING)
 
 def is_multiple_choice_survey_question(question_id):
     cursor = db.cursor()
-    cursor.execute(f"SELECT is_multiple_choice FROM survey_question WHERE survey_question_id={question_id}")
+    cursor.execute(
+        f"SELECT is_multiple_choice FROM survey_question WHERE survey_question_id={question_id}"
+    )
 
     question = cursor.fetchone()
     return question[0] if question is not None else False
@@ -81,10 +83,44 @@ def add_sent_survey_question(user_id, survey_question_id, message_id):
     db.commit()
 
 
-def get_all_user_ids_from_survey_progress():
+def get_all_user_ids_from_survey_progress(survey_id):
     cursor = db.cursor()
-    cursor.execute(f"SELECT user_id from user_survey_progress")
+    cursor.execute(
+        f"SELECT user_id from user_survey_progress WHERE survey_id={survey_id}"
+    )
     return [res[0] for res in cursor.fetchall()]
+
+
+def get_user_survey_progress_status_or_none(survey_id, user_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT status from user_survey_progress WHERE survey_id={survey_id} AND user_id={user_id}"
+    )
+    status = cursor.fetchone()
+    if status is not None:
+        return status[0]
+    else:
+        return None
+
+
+def clear_all_user_survey_progress(survey_id, user_id):
+    survey_question_cursor = db.cursor()
+    survey_question_cursor.execute(
+        f"SELECT survey_question_id from survey_question WHERE survey_id={survey_id}"
+    )
+    survey_question_ids = tuple([res[0] for res in survey_question_cursor.fetchall()])
+
+    delete_cursor = db.cursor()
+    delete_cursor.execute(
+        f"DELETE from sent_survey_question WHERE user_id={user_id} AND survey_question_id IN {survey_question_ids}"
+    )
+    delete_cursor.execute(
+        f"DELETE from user_survey_answer WHERE user_id={user_id} AND survey_question_id IN {survey_question_ids}"
+    )
+    delete_cursor.execute(
+        f"DELETE from user_survey_progress WHERE survey_id={survey_id} AND user_id={user_id}"
+    )
+    db.commit()
 
 
 def create_user_survey_progress(survey_id, user_id, channel_id):
