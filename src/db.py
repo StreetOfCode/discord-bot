@@ -30,6 +30,7 @@ def get_emoji_from_survey_answer(survey_answer_id):
     )
     return cursor.fetchone()[0]
 
+
 def add_sent_survey_question(user_id, survey_question_id, message_id):
     cursor = db.cursor()
     cursor.execute(
@@ -40,9 +41,7 @@ def add_sent_survey_question(user_id, survey_question_id, message_id):
 
 def get_all_users_from_survey_progress():
     cursor = db.cursor()
-    cursor.execute(
-        f"SELECT user_id from user_survey_progress"
-    )
+    cursor.execute(f"SELECT user_id from user_survey_progress")
     return [res[0] for res in cursor.fetchall()]
 
 
