@@ -64,6 +64,7 @@ def get_emoji_from_survey_answer(survey_answer_id):
     )
     return cursor.fetchone()[0]
 
+
 def add_sent_survey_question(user_id, survey_question_id, message_id):
     cursor = db.cursor()
     cursor.execute(
