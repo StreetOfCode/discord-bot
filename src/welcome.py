@@ -33,21 +33,24 @@ async def welcome_member(client, member):
     await send_welcome_message(channel, member, intro_message)
 
     db.create_user_survey_progress(WELCOME_SURVEY_ID, member.id, channel.id)
+    await send_next_question(channel, member)
 
-    questions = db.get_survey_questions()
-    for question, answers in questions:
-        position_embed = discord.Embed(
-            title=question[2], colour=discord.Colour(0xFFFF00)
-        )
-        for (_, _, _, text, emoji) in answers:
-            position_embed.add_field(name=text, value=emoji, inline=True)
 
-        message = await channel.send(embed=position_embed)
+async def send_next_question(channel, member):
+    question, answers = db.get_next_survey_question(member.id, WELCOME_SURVEY_ID)
+    if question is None or answers is None:
+        return
 
-        for (_, _, _, _, emoji) in answers:
-            await message.add_reaction(emoji=emoji)
+    position_embed = discord.Embed(title=question[2], colour=discord.Colour(0xFFFF00))
+    for (_, _, _, text, emoji) in answers:
+        position_embed.add_field(name=text, value=emoji, inline=True)
 
-        db.add_sent_survey_question(member.id, question[0], message.id)
+    message = await channel.send(embed=position_embed)
+
+    for (_, _, _, _, emoji) in answers:
+        await message.add_reaction(emoji=emoji)
+
+    db.add_sent_survey_question(member.id, question[0], message.id)
 
 
 async def remove_reaction_on_survey_answer(user_id, question_id, emoji):
@@ -83,3 +86,5 @@ async def add_reaction_on_survey_answer(client, member, survey_id, question_id, 
 
         # TODO remove or something else
         await message.channel.send("Odpovedal si na vsetko. Topka!")
+    elif already_answer_id is None:
+        await send_next_question(message.channel, member)
