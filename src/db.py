@@ -38,6 +38,14 @@ def add_sent_survey_question(user_id, survey_question_id, message_id):
     db.commit()
 
 
+def get_all_users_from_survey_progress():
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT user_id from user_survey_progress"
+    )
+    return [res[0] for res in cursor.fetchall()]
+
+
 def create_user_survey_progress(survey_id, user_id, channel_id):
     cursor = db.cursor()
     cursor.execute(

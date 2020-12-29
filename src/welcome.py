@@ -2,7 +2,8 @@ import discord
 import db
 
 from utils import get_server
-from config import ROLE_FOR_NEW_MEMBER, WELCOME_SURVEY_ID
+from config import NEW_MEMBER_ROLE, WELCOME_SURVEY_ID
+
 
 async def send_welcome_message(channel, member, welcome_message):
     embed = discord.Embed(
@@ -76,7 +77,7 @@ async def add_reaction_on_survey_answer(client, member, survey_id, question_id, 
             await member.add_roles(member_role)
 
         if survey_id == WELCOME_SURVEY_ID:
-            new_member_role = discord.utils.get(get_server(client).roles, name=ROLE_FOR_NEW_MEMBER)
+            new_member_role = discord.utils.get(get_server(client).roles, name=NEW_MEMBER_ROLE)
             await member.remove_roles(new_member_role)
 
         db.finish_user_survey_progress(survey_id, member.id)
