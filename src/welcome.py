@@ -46,9 +46,7 @@ async def send_next_question(channel, member):
         return
 
     is_multiple_choice_question = question[3]
-    description = (
-        MULTIPLE_CHOICE_EMBED_DESCRIPTION if is_multiple_choice_question else ""
-    )
+    description = MULTIPLE_CHOICE_EMBED_DESCRIPTION if is_multiple_choice_question else ""
 
     position_embed = discord.Embed(
         title=question[2], description=description, colour=discord.Colour(0xFFFF00)

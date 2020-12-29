@@ -4,13 +4,7 @@ import db
 
 from discord.ext import commands
 
-from config import (
-    TOKEN,
-    NEW_MEMBER_ROLE,
-    OLD_MEMBER_ROLE,
-    MEMBER_ROLE,
-    WELCOME_SURVEY_ID,
-)
+from config import TOKEN, NEW_MEMBER_ROLE, ADMIN_ROLE, OLD_MEMBER_ROLE
 
 from welcome import (
     welcome_member,
@@ -34,9 +28,7 @@ async def send_welcome_survey_command(context):
     """
     sent_to = []
     if is_admin(context.author):
-        users_that_started_survey = db.get_all_user_ids_from_survey_progress(
-            WELCOME_SURVEY_ID
-        )
+        users_that_started_survey = db.get_all_user_ids_from_survey_progress()
         old_member_role = get_role(client, OLD_MEMBER_ROLE)
         for member in get_server(client).members:
             if member != client.user and member.id not in users_that_started_survey:
@@ -71,17 +63,6 @@ async def on_message(message):
 @client.event
 async def on_member_join(member):
     print("Recognised that a member called " + member.name + " joined")
-    welcome_survey_status = db.get_user_survey_progress_status_or_none(
-        WELCOME_SURVEY_ID, member.id
-    )
-    if welcome_survey_status == "FINISHED":
-        member_role = get_role(client, MEMBER_ROLE)
-        await member.add_roles(member_role)
-        return
-
-    if welcome_survey_status == "IN_PROGRESS":
-        db.clear_all_user_survey_progress(WELCOME_SURVEY_ID, member.id)
-
     new_member_role = get_role(client, NEW_MEMBER_ROLE)
     await member.add_roles(new_member_role)
     await welcome_member(client, member)
