@@ -1,9 +1,11 @@
 import discord
+
 import db
 
 from discord.ext import commands
 
 from config import TOKEN, NEW_MEMBER_ROLE, ADMIN_ROLE, OLD_MEMBER_ROLE
+
 from welcome import (
     welcome_member,
     add_reaction_on_survey_answer,
@@ -63,7 +65,9 @@ async def on_message(message):
 @client.event
 async def on_member_join(member):
     print("Recognised that a member called " + member.name + " joined")
-    new_member_role = discord.utils.get(get_server(client).roles, name=NEW_MEMBER_ROLE)
+    new_member_role = discord.utils.get(
+        get_server(client).roles, name=NEW_MEMBER_ROLE
+    )
     await member.add_roles(new_member_role)
     await welcome_member(client, member)
 

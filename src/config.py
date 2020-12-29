@@ -6,8 +6,7 @@ load_dotenv()
 SERVER_ID = int(os.environ.get("SERVER_ID"))
 DB_CONNECTION_STRING = os.environ.get("DB_CONNECTION_STRING")
 TOKEN = os.environ.get("TOKEN")
-
-NEW_MEMBER_ROLE = "new-member"
-OLD_MEMBER_ROLE = "old-member"
-WELCOME_SURVEY_ID = 1
-ADMIN_ROLE = "admin"
+NEW_MEMBER_ROLE = os.environ.get("NEW_MEMBER_ROLE")
+OLD_MEMBER_ROLE = os.environ.get("OLD_MEMBER_ROLE")
+ADMIN_ROLE = os.environ.get("ADMIN_ROLE")
+WELCOME_SURVEY_ID = os.environ.get("WELCOME_SURVEY_ID")

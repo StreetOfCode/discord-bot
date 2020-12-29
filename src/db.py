@@ -23,6 +23,40 @@ def get_survey_questions():
     return result
 
 
+def get_next_survey_question(user_id, survey_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"""
+            SELECT * FROM survey_question 
+            WHERE survey_id = {survey_id} 
+                AND survey_question_id 
+                    NOT IN (
+                        SELECT survey_question_id FROM user_survey_answer WHERE user_id = {user_id}
+                    )
+            ORDER BY survey_question_id
+            LIMIT 1
+        """
+    )
+
+    question = cursor.fetchone()
+    if question is None:
+        return None, None
+
+    answers = get_survey_question_answers(question[0])
+    if answers is None or len(answers) == 0:
+        return None, None
+
+    return question, answers
+
+
+def get_survey_question_answers(question_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT * FROM survey_answer WHERE survey_question_id={question_id}"
+    )
+    return cursor.fetchall()
+
+
 def get_emoji_from_survey_answer(survey_answer_id):
     cursor = db.cursor()
     cursor.execute(
