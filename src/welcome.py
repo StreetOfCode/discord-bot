@@ -4,6 +4,7 @@ import db
 from utils import get_server
 from config import ROLE_FOR_NEW_MEMBER, WELCOME_SURVEY_ID
 
+
 async def send_welcome_message(channel, member, welcome_message):
     embed = discord.Embed(
         title=f"Vitaj {member.display_name}",
@@ -59,11 +60,17 @@ async def remove_reaction_on_survey_answer(user_id, question_id, emoji):
     db.remove_user_answer(user_id, question_id, answer_id)
 
 
-async def add_reaction_on_survey_answer(client, member, survey_id, question_id, emoji, message):
+async def add_reaction_on_survey_answer(
+    client, member, survey_id, question_id, emoji, message
+):
     answer_id = db.get_answer_id(question_id, emoji)
 
     # Check if user have already answered this question
-    if (already_answer_id := db.get_answer_of_answered_survey_question_or_none(question_id, member.id)) is not None:
+    if (
+        already_answer_id := db.get_answer_of_answered_survey_question_or_none(
+            question_id, member.id
+        )
+    ) is not None:
         # Remove answer from db
         db.remove_user_answer(member.id, question_id, already_answer_id)
         # Remove reaction from answer
@@ -79,7 +86,9 @@ async def add_reaction_on_survey_answer(client, member, survey_id, question_id, 
             await member.add_roles(member_role)
 
         if survey_id == WELCOME_SURVEY_ID:
-            new_member_role = discord.utils.get(get_server(client).roles, name=ROLE_FOR_NEW_MEMBER)
+            new_member_role = discord.utils.get(
+                get_server(client).roles, name=ROLE_FOR_NEW_MEMBER
+            )
             await member.remove_roles(new_member_role)
 
         db.finish_user_survey_progress(survey_id, member.id)
