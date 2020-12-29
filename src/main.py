@@ -65,9 +65,7 @@ async def on_message(message):
 @client.event
 async def on_member_join(member):
     print("Recognised that a member called " + member.name + " joined")
-    new_member_role = discord.utils.get(
-        get_server(client).roles, name=NEW_MEMBER_ROLE
-    )
+    new_member_role = discord.utils.get(get_server(client).roles, name=NEW_MEMBER_ROLE)
     await member.add_roles(new_member_role)
     await welcome_member(client, member)
 

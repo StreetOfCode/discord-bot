@@ -1,6 +1,7 @@
 import discord
 import db
 
+from discord.utils import get
 from utils import get_server
 from config import NEW_MEMBER_ROLE, WELCOME_SURVEY_ID
 
@@ -82,13 +83,11 @@ async def add_reaction_on_survey_answer(
     if db.are_all_survey_questions_answered(member.id):
         # Add receive role if survey contains receive_role_after_finish
         if (receive_role := db.get_survey_receive_role_or_none(survey_id)) is not None:
-            member_role = discord.utils.get(get_server(client).roles, name=receive_role)
+            member_role = get(get_server(client).roles, name=receive_role)
             await member.add_roles(member_role)
 
         if survey_id == WELCOME_SURVEY_ID:
-            new_member_role = discord.utils.get(
-                get_server(client).roles, name=NEW_MEMBER_ROLE
-            )
+            new_member_role = get(get_server(client).roles, name=NEW_MEMBER_ROLE)
             await member.remove_roles(new_member_role)
 
         db.finish_user_survey_progress(survey_id, member.id)
