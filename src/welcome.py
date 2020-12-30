@@ -1,9 +1,9 @@
 import discord
-import db
-
 from discord.utils import get
-from utils import get_server
-from config import NEW_MEMBER_ROLE, WELCOME_SURVEY_ID
+
+import db
+from config import MEMBER_ROLE, NEW_MEMBER_ROLE, WELCOME_SURVEY_ID
+from utils import get_role, get_server
 
 MULTIPLE_CHOICE_EMBED_DESCRIPTION = " Môžeš zvoliť viacero odpovedí!"
 
@@ -31,6 +31,20 @@ async def create_welcome_channel(guild, member):
 
 
 async def welcome_member(client, member):
+    welcome_survey_status = db.get_user_survey_progress_status_or_none(
+        WELCOME_SURVEY_ID, member.id
+    )
+    if welcome_survey_status == "FINISHED":
+        member_role = get_role(client, MEMBER_ROLE)
+        await member.add_roles(member_role)
+        return
+
+    if welcome_survey_status == "IN_PROGRESS":
+        db.clear_all_user_survey_progress(WELCOME_SURVEY_ID, member.id)
+
+    new_member_role = get_role(client, NEW_MEMBER_ROLE)
+    await member.add_roles(new_member_role)
+
     channel = await create_welcome_channel(get_server(client), member)
 
     intro_message = db.get_survey_intro_message(WELCOME_SURVEY_ID)
