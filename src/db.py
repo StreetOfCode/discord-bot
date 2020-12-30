@@ -1,4 +1,5 @@
 import psycopg2
+
 from config import DB_CONNECTION_STRING
 
 db = psycopg2.connect(DB_CONNECTION_STRING)
