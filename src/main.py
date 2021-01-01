@@ -10,6 +10,10 @@ from welcome import (
     welcome_member,
 )
 
+logging.basicConfig(
+    format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO
+)
+
 intents = discord.Intents.default()
 intents.members = True
 
@@ -23,6 +27,8 @@ async def send_welcome_survey_command(context):
     Command sends welcome survey to all users who hasn't started survey and don't have admin role
     Also it gives them old_member role
     """
+    logging.info("Executing send-welcome-survey command.")
+
     sent_to = []
     if is_admin(context.author):
         users_that_started_survey = db.get_all_user_ids_from_survey_progress(
@@ -37,14 +43,14 @@ async def send_welcome_survey_command(context):
                     sent_to.append(member.display_name)
         await context.channel.send(f"Sent to {sent_to}")
     else:
-        print(
+        logging.error(
             f"Unauthorized member {context.author} called send-welcome-survey command"
         )
 
 
 @client.event
 async def on_ready():
-    print("We have logged in as {0.user}".format(client))
+    logging.info("We have logged in as {0.user}".format(client))
 
 
 @client.event
@@ -61,7 +67,7 @@ async def on_message(message):
 
 @client.event
 async def on_member_join(member):
-    print("Recognised that a member called " + member.name + " joined")
+    logging.info(f"{member.name} joined.")
     await welcome_member(client, member)
 
 
