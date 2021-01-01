@@ -42,7 +42,7 @@ def get_next_survey_question(user_id, survey_id):
             WHERE survey_id = {survey_id} 
                 AND survey_question_id 
                     NOT IN (
-                        SELECT survey_question_id FROM user_survey_answer WHERE user_id = {user_id}
+                        SELECT survey_question_id FROM sent_survey_question WHERE user_id = {user_id}
                     )
             ORDER BY survey_question_id
             LIMIT 1
