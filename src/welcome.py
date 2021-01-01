@@ -130,5 +130,19 @@ async def add_reaction_on_survey_answer(
 
         # TODO remove or something else
         await message.channel.send("Odpovedal si na vsetko. Topka!")
+    elif db.is_last_question(survey_id, question_id):
+        await message.remove_reaction(emoji, member)
+
+        unanswered_questions = db.get_unanswered_question_texts(survey_id, member.id)
+
+        embed_description = "\n".join(
+            ["- " + question for question in unanswered_questions]
+        )
+        embed = discord.Embed(
+            title="Ešte si neodpovedal/a na niektoré otázky:",
+            description=embed_description,
+            colour=discord.Colour(0xFFFF00),
+        )
+        await message.channel.send(embed=embed)
     elif already_answer_id is None:
         await send_next_question(message.channel, member)
