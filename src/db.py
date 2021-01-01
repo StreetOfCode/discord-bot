@@ -193,6 +193,15 @@ def get_survey_id_from_user_survey_progress_or_none(user_id, channel_id):
         return survey_id[0]
 
 
+def is_survey_progress_finished(survey_id, user_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT status FROM user_survey_progress WHERE survey_id={survey_id} AND user_id={user_id}"
+    )
+    status = cursor.fetchone()
+    return status[0] == "FINISHED" if status is not None else False
+
+
 def get_answer_id(survey_question_id, emoji):
     cursor = db.cursor()
     cursor.execute(

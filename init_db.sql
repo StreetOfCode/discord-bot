@@ -127,3 +127,8 @@ INSERT INTO survey_answer(survey_question_id, number, text, emoji, alias)
 VALUES(6, 1, 'Áno', '👍', 'survey-fan');
 INSERT INTO survey_answer(survey_question_id, number, text, emoji)
 VALUES(6, 2, 'Nie, ďakujem', '👎');
+
+INSERT INTO survey_question(survey_id, text, is_multiple_choice)
+VALUES(1, 'Odpovedal/a si na všetky otázky? Ked pridáš 👍, tak tieto odpovede už nebudeš môcť meniť a staneš sa členom/členkou nášho Discordu.', FALSE);
+INSERT INTO survey_answer(survey_question_id, number, text, emoji)
+VALUES(7, 1, 'Áno', '👍');
