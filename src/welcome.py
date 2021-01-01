@@ -23,7 +23,9 @@ async def create_welcome_channel(guild, member):
         f"vitaj {member.display_name}",
         overwrites={
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            member: discord.PermissionOverwrite(view_channel=True, add_reactions=True),
+            member: discord.PermissionOverwrite(
+                view_channel=True, add_reactions=False, send_messages=False
+            ),
             guild.me: discord.PermissionOverwrite(administrator=True),
         },
     )
@@ -79,7 +81,13 @@ async def send_next_question(channel, member):
     db.add_sent_survey_question(member.id, question[0], message.id)
 
 
-async def remove_reaction_on_survey_answer(user_id, question_id, emoji):
+async def remove_reaction_on_survey_answer(user_id, survey_id, question_id, emoji):
+    is_finished = db.is_survey_progress_finished(survey_id, user_id)
+    if is_finished:
+        # Sadly, there is nothing we can do to set the reaction again in the UI.
+        # We simply ignore the removal so it at least stays in our db.
+        return
+
     # TODO maybe improve with single query?
     answer_id = db.get_answer_id(question_id, emoji)
     db.remove_user_answer(user_id, question_id, answer_id)
@@ -88,6 +96,11 @@ async def remove_reaction_on_survey_answer(user_id, question_id, emoji):
 async def add_reaction_on_survey_answer(
     client, member, survey_id, question_id, emoji, message
 ):
+    is_finished = db.is_survey_progress_finished(survey_id, member.id)
+    if is_finished:
+        await message.remove_reaction(emoji, member)
+        return
+
     answer_id = db.get_answer_id(question_id, emoji)
 
     is_multiple_choice_question = db.is_multiple_choice_survey_question(question_id)

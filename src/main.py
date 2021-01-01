@@ -96,16 +96,16 @@ async def on_raw_reaction_remove(payload):
     if payload.user_id != guild.me.id:
         # If reaction is on welcome survey question
         if (
-            db.get_survey_id_from_user_survey_progress_or_none(
+            survey_id := db.get_survey_id_from_user_survey_progress_or_none(
                 payload.user_id, payload.channel_id
             )
-            is not None
-        ):
+        ) is not None:
             if (
                 question_id := db.get_survey_question_id_or_none(payload.message_id)
             ) is not None:
                 await remove_reaction_on_survey_answer(
                     user_id=payload.user_id,
+                    survey_id=survey_id,
                     question_id=question_id,
                     emoji=payload.emoji,
                 )
