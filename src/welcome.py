@@ -1,12 +1,9 @@
 import logging
-
 import discord
-from discord.utils import get
-
 import db
-from config import MEMBER_ROLE, NEW_MEMBER_ROLE, WELCOME_SURVEY_ID
+from config import MEMBER_ROLE, NEW_MEMBER_ROLE, WELCOME_SURVEY_ID, OLD_MEMBER_ROLE
 from log_utils import channel_to_string, member_to_string
-from utils import get_role, get_server
+from utils import get_role, get_server, has_role
 
 MULTIPLE_CHOICE_EMBED_DESCRIPTION = " Môžeš zvoliť viacero odpovedí!"
 
@@ -61,8 +58,9 @@ async def welcome_member(client, member):
         )
         db.clear_all_user_survey_progress(WELCOME_SURVEY_ID, member.id)
 
-    new_member_role = get_role(client, NEW_MEMBER_ROLE)
-    await member.add_roles(new_member_role)
+    if not has_role(member, OLD_MEMBER_ROLE):
+        new_member_role = get_role(client, NEW_MEMBER_ROLE)
+        await member.add_roles(new_member_role)
 
     channel = await create_welcome_channel(get_server(client), member)
 
@@ -141,7 +139,10 @@ async def add_reaction_on_survey_answer(
     existing_answer_to_question = db.get_answer_of_answered_survey_question_or_none(
         question_id, member.id
     )
-    if not db.is_multiple_choice_survey_question(question_id) and existing_answer_to_question is not None:
+    if (
+        not db.is_multiple_choice_survey_question(question_id)
+        and existing_answer_to_question is not None
+    ):
         logging.info(
             f"Removing existing answer from user {member_to_string(member)} for survey ({survey_id}) question ({question_id})."
         )
@@ -159,18 +160,25 @@ async def add_reaction_on_survey_answer(
         )
         # Add receive role if survey contains receive_role_after_finish
         if (receive_role := db.get_survey_receive_role_or_none(survey_id)) is not None:
-            member_role = get(get_server(client).roles, name=receive_role)
+            survey_receive_role = get_role(client, receive_role)
             logging.info(
-                f"Adding role ({member_role.name}) to user {member_to_string(member)}"
+                f"Adding role ({survey_receive_role.name}) to user {member_to_string(member)}"
             )
-            await member.add_roles(member_role)
+            await member.add_roles(survey_receive_role)
 
         if survey_id == WELCOME_SURVEY_ID:
-            new_member_role = get(get_server(client).roles, name=NEW_MEMBER_ROLE)
-            logging.info(
-                f"Removing role ({new_member_role.name}) from user {member_to_string(member)}"
-            )
-            await member.remove_roles(new_member_role)
+            if has_role(member, OLD_MEMBER_ROLE):
+                old_member_role = get_role(client, OLD_MEMBER_ROLE)
+                logging.info(
+                    f"Removing role ({old_member_role.name}) from user {member_to_string(member)}"
+                )
+                await member.remove_roles(old_member_role)
+            else:
+                new_member_role = get_role(client, NEW_MEMBER_ROLE)
+                logging.info(
+                    f"Removing role ({new_member_role.name}) from user {member_to_string(member)}"
+                )
+                await member.remove_roles(new_member_role)
 
         db.finish_user_survey_progress(survey_id, member.id)
 
@@ -189,7 +197,7 @@ async def add_reaction_on_survey_answer(
             ["- " + question for question in unanswered_questions]
         )
         embed = discord.Embed(
-            title="Ešte si neodpovedal/a na niektoré otázky:",
+            title="Ešte si neodpovedal/a na niektoré otázky, tak prosím odpovedz a potom znova klikni, že si odpovedal/a na všetky otázky. Otázky, na ktoré si neodpovedal/a:",
             description=embed_description,
             colour=discord.Colour(0xFFFF00),
         )

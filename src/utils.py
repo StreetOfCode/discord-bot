@@ -21,5 +21,9 @@ def is_admin(member):
     return ADMIN_ROLE in [role.name for role in member.roles]
 
 
+def has_role(member, role_name):
+    return role_name in [role.name for role in member.roles]
+
+
 def get_role(client, name):
     return get(get_server(client).roles, name=name)
