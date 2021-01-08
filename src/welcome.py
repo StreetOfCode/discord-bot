@@ -95,10 +95,11 @@ async def send_next_question(channel, member):
 
     message = await channel.send(embed=position_embed)
 
+    db.add_sent_survey_question(member.id, question[0], message.id)
+
     for (_, _, _, _, emoji, _) in answers:
         await message.add_reaction(emoji=emoji)
 
-    db.add_sent_survey_question(member.id, question[0], message.id)
     logging.info(f"Sent next question ({question[0]}) to {member_to_string(member)}.")
 
 
