@@ -60,10 +60,6 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # TODO REMOVE
-    if message.content.startswith("/welcome"):
-        await welcome_member(client, message.author)
-
     await client.process_commands(message)
 
 

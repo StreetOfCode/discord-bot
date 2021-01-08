@@ -232,11 +232,10 @@ def remove_user_answer(user_id, survey_question_id, survey_answer_id):
     db.commit()
 
 
-# TODO: fix - questions should also be selected depending on survey_id (current solution would break if we add surveys)
-def are_all_survey_questions_answered(user_id):
+def are_all_survey_questions_answered(user_id, survey_id):
     cursor = db.cursor()
     cursor.execute(
-        f"SELECT COUNT(*) FROM survey_question WHERE survey_question_id not in (SELECT survey_question_id FROM user_survey_answer WHERE user_id={user_id})"
+        f"SELECT COUNT(*) FROM survey_question WHERE survey_id={survey_id} AND survey_question_id not in (SELECT survey_question_id FROM user_survey_answer WHERE user_id={user_id})"
     )
 
     return cursor.fetchone()[0] == 0

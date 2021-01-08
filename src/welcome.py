@@ -154,7 +154,7 @@ async def add_reaction_on_survey_answer(
 
     db.add_answer(member.id, question_id, db.get_answer_id(question_id, emoji))
 
-    if db.are_all_survey_questions_answered(member.id):
+    if db.are_all_survey_questions_answered(member.id, survey_id):
         logging.info(
             f"User {member_to_string(member)} answered all survey ({survey_id}) questions."
         )
