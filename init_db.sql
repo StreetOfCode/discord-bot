@@ -1,5 +1,5 @@
 ------------------ TABLE DEFINITIONS ---------------
-DROP TYPE user_survey_status_type CASCADE;
+DROP TYPE IF EXISTS user_survey_status_type CASCADE;
 DROP TABLE IF EXISTS survey CASCADE;
 DROP TABLE IF EXISTS user_survey_progress CASCADE;
 DROP TABLE IF EXISTS survey_question CASCADE;
