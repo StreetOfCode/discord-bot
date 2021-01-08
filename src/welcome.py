@@ -108,8 +108,7 @@ async def remove_reaction_on_survey_answer(user_id, survey_id, question_id, emoj
         f"Removing reaction ({emoji}) from user ({user_id}) for survey ({survey_id}) question ({question_id})."
     )
 
-    is_finished = db.is_survey_progress_finished(survey_id, user_id)
-    if is_finished:
+    if db.is_survey_progress_finished(survey_id, user_id):
         logging.info(
             f"User ({user_id}) survey ({survey_id}) already finished. Keeping reaction in DB."
         )
@@ -132,31 +131,27 @@ async def add_reaction_on_survey_answer(
         f"Adding reaction ({emoji}) from user {member_to_string(member)} for survey ({survey_id}) question ({question_id})."
     )
 
-    is_finished = db.is_survey_progress_finished(survey_id, member.id)
-    if is_finished:
+    if db.is_survey_progress_finished(survey_id, member.id):
         logging.info(
             f"User {member_to_string(member)} survey ({survey_id}) already finished. Removing reaction from message."
         )
         await message.remove_reaction(emoji, member)
         return
 
-    answer_id = db.get_answer_id(question_id, emoji)
-
-    is_multiple_choice_question = db.is_multiple_choice_survey_question(question_id)
-    already_answer_id = db.get_answer_of_answered_survey_question_or_none(
+    existing_answer_to_question = db.get_answer_of_answered_survey_question_or_none(
         question_id, member.id
     )
-    if not is_multiple_choice_question and already_answer_id is not None:
+    if not db.is_multiple_choice_survey_question(question_id) and existing_answer_to_question is not None:
         logging.info(
             f"Removing existing answer from user {member_to_string(member)} for survey ({survey_id}) question ({question_id})."
         )
         # Remove answer from db
-        db.remove_user_answer(member.id, question_id, already_answer_id)
+        db.remove_user_answer(member.id, question_id, existing_answer_to_question)
         # Remove reaction from answer
-        emoji_to_delete = db.get_emoji_from_survey_answer(already_answer_id)
+        emoji_to_delete = db.get_emoji_from_survey_answer(existing_answer_to_question)
         await message.remove_reaction(emoji_to_delete, member)
 
-    db.add_answer(member.id, question_id, answer_id)
+    db.add_answer(member.id, question_id, db.get_answer_id(question_id, emoji))
 
     if db.are_all_survey_questions_answered(member.id):
         logging.info(
@@ -181,8 +176,7 @@ async def add_reaction_on_survey_answer(
 
         logging.info(f"User {member_to_string(member)} finished survey ({survey_id}).")
 
-        # TODO remove or something else
-        await message.channel.send("Odpovedal si na vsetko. Topka!")
+        await message.channel.send("Koniec dotazníka. Ďakujeme pekne 🙂")
     elif db.is_last_question(survey_id, question_id):
         logging.info(
             f"Sending unanswered questions to user {member_to_string(member)} on survey ({survey_id})."
@@ -200,5 +194,5 @@ async def add_reaction_on_survey_answer(
             colour=discord.Colour(0xFFFF00),
         )
         await message.channel.send(embed=embed)
-    elif already_answer_id is None:
+    elif existing_answer_to_question is None:
         await send_next_question(message.channel, member)
