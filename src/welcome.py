@@ -71,12 +71,26 @@ async def welcome_member(client, member):
     await send_next_question(channel, member)
 
 
-async def send_next_question(channel, member):
+def should_send_next_question(next_question_number, answered_question_id):
+    if answered_question_id is not None:
+        previous_question_number = db.get_survey_question_number_or_none(answered_question_id)
+        if previous_question_number is not None and previous_question_number + 1 != next_question_number:
+            logging.info(f"Last answered question isn't the last question sent.")
+            return False
+
+    return True
+
+
+async def send_next_question(channel, member, answered_question_id=None):
     logging.info(f"Sending next question to {member_to_string(member)}.")
 
     question, answers = db.get_next_survey_question(member.id, WELCOME_SURVEY_ID)
     if question is None or answers is None:
         logging.info(f"Question ({question} or answers ({answers}) are null.")
+        return
+
+    if not should_send_next_question(question[2], answered_question_id):
+        logging.info(f"Not sending next question.")
         return
 
     is_multiple_choice_question = question[3]
@@ -85,7 +99,7 @@ async def send_next_question(channel, member):
     )
 
     position_embed = discord.Embed(
-        title=question[2], description=description, colour=discord.Colour(0xFFFF00)
+        title=question[3], description=description, colour=discord.Colour(0xFFFF00)
     )
 
     for (_, _, _, text, emoji, _) in answers:
@@ -203,4 +217,4 @@ async def add_reaction_on_survey_answer(
         )
         await message.channel.send(embed=embed)
     elif existing_answer_to_question is None:
-        await send_next_question(message.channel, member)
+        await send_next_question(message.channel, member, question_id)

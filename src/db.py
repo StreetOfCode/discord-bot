@@ -34,6 +34,15 @@ def get_survey_questions():
     return result
 
 
+def get_survey_question_number_or_none(question_id):
+    cursor = db.cursor()
+    cursor.execute(f"SELECT number FROM survey_question WHERE survey_question_id = {question_id}")
+
+    question = cursor.fetchone()
+
+    return question[0] if question is not None else None
+
+
 def get_next_survey_question(user_id, survey_id):
     cursor = db.cursor()
     cursor.execute(
