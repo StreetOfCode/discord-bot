@@ -5,12 +5,9 @@ from discord.ext import commands
 
 import db
 from config import OLD_MEMBER_ROLE, TOKEN, WELCOME_SURVEY_ID
+from survey import add_reaction_on_survey_answer, remove_reaction_on_survey_answer
 from utils import get_role, get_server, is_admin
-from welcome import (
-    add_reaction_on_survey_answer,
-    remove_reaction_on_survey_answer,
-    welcome_member,
-)
+from welcome import welcome_member
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO
@@ -73,7 +70,6 @@ async def on_member_join(member):
 async def on_raw_reaction_add(payload):
     guild = get_server(client)
     if payload.member.id != guild.me.id:
-        # If reaction is on welcome survey question
         if (
             survey_id := db.get_survey_id_from_user_survey_progress_or_none(
                 payload.member.id, payload.channel_id
@@ -98,7 +94,6 @@ async def on_raw_reaction_add(payload):
 async def on_raw_reaction_remove(payload):
     guild = get_server(client)
     if payload.user_id != guild.me.id:
-        # If reaction is on welcome survey question
         if (
             survey_id := db.get_survey_id_from_user_survey_progress_or_none(
                 payload.user_id, payload.channel_id
