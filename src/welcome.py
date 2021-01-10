@@ -1,7 +1,12 @@
 import logging
 import discord
 import db
-from config import MEMBER_ROLE, NEW_MEMBER_ROLE, WELCOME_SURVEY_ID, OLD_MEMBER_ROLE
+from config import (MEMBER_ROLE, NEW_MEMBER_ROLE, OLD_MEMBER_ROLE,
+                    WELCOME_SURVEY_ID)
+from db.columns import (COLUMN_ID, COLUMN_SURVEY_ANSWER_EMOJI,
+                        COLUMN_SURVEY_ANSWER_TEXT,
+                        COLUMN_SURVEY_QUESTION_ORDER,
+                        COLUMN_SURVEY_QUESTION_TEXT)
 from log_utils import channel_to_string, member_to_string
 from utils import get_role, get_server, has_role
 
@@ -89,30 +94,31 @@ async def send_next_question(channel, member, answered_question_id=None):
         logging.info(f"Question ({question} or answers ({answers}) are null.")
         return
 
-    if not should_send_next_question(question[2], answered_question_id):
+    if not should_send_next_question(question[COLUMN_SURVEY_QUESTION_ORDER], answered_question_id):
         logging.info(f"Not sending next question.")
         return
 
-    is_multiple_choice_question = question[3]
+    is_multiple_choice_question = question[COLUMN_SURVEY_QUESTION_TEXT]
     description = (
         MULTIPLE_CHOICE_EMBED_DESCRIPTION if is_multiple_choice_question else ""
     )
 
-    position_embed = discord.Embed(
-        title=question[3], description=description, colour=discord.Colour(0xFFFF00)
+    question_embed = discord.Embed(
+        title=question[COLUMN_SURVEY_QUESTION_TEXT], description=description, colour=discord.Colour(0xFFFF00)
     )
 
-    for (_, _, _, text, emoji, _) in answers:
-        position_embed.add_field(name=text, value=emoji, inline=True)
+    for answer in answers:
+        question_embed.add_field(name=answer[COLUMN_SURVEY_ANSWER_TEXT], value=answer[COLUMN_SURVEY_ANSWER_EMOJI],
+                                 inline=True)
 
-    message = await channel.send(embed=position_embed)
+    message = await channel.send(embed=question_embed)
 
-    db.add_sent_survey_question(member.id, question[0], message.id)
+    db.add_sent_survey_question(member.id, question[COLUMN_ID], message.id)
 
-    for (_, _, _, _, emoji, _) in answers:
-        await message.add_reaction(emoji=emoji)
+    for answer in answers:
+        await message.add_reaction(emoji=answer[COLUMN_SURVEY_ANSWER_EMOJI])
 
-    logging.info(f"Sent next question ({question[0]}) to {member_to_string(member)}.")
+    logging.info(f"Sent next question ({question[COLUMN_ID]}) to {member_to_string(member)}.")
 
 
 async def remove_reaction_on_survey_answer(user_id, survey_id, question_id, emoji):
