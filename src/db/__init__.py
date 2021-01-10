@@ -1,5 +1,6 @@
 import psycopg2
 
+import survey_status
 from config import DB_CONNECTION_STRING
 
 db = psycopg2.connect(DB_CONNECTION_STRING)
@@ -148,7 +149,7 @@ def create_user_survey_progress(survey_id, user_id, channel_id):
 def finish_user_survey_progress(survey_id, user_id):
     cursor = db.cursor()
     cursor.execute(
-        f"UPDATE user_survey_progress SET status='FINISHED' WHERE survey_id={survey_id} AND user_id={user_id}"
+        f"UPDATE user_survey_progress SET status='{survey_status.FINISHED}' WHERE survey_id={survey_id} AND user_id={user_id}"
     )
     db.commit()
 
@@ -207,7 +208,7 @@ def is_survey_progress_finished(survey_id, user_id):
     )
     status = cursor.fetchone()
 
-    return _get_first_or_none(status) == "FINISHED"
+    return _get_first_or_none(status) == survey_status.FINISHED
 
 
 def get_answer_id(survey_question_id, emoji):
