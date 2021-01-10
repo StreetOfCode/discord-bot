@@ -3,6 +3,7 @@ import logging
 import discord
 
 import db
+import survey_status
 from config import MEMBER_ROLE, NEW_MEMBER_ROLE, OLD_MEMBER_ROLE, WELCOME_SURVEY_ID
 from db.columns import (
     COLUMN_ID,
@@ -15,6 +16,8 @@ from log_utils import channel_to_string, member_to_string
 from utils import get_role, get_server, has_role
 
 MULTIPLE_CHOICE_EMBED_DESCRIPTION = " Môžeš zvoliť viacero odpovedí!"
+SURVEY_FINISHED_MESSAGE = "Koniec dotazníka. Ďakujeme pekne 🙂"
+UNANSWERED_QUESTIONS_TEXT = "Ešte si neodpovedal/a na niektoré otázky, tak prosím odpovedz a potom znova klikni, že si odpovedal/a na všetky otázky. Otázky, na ktoré si neodpovedal/a:"
 
 
 async def send_welcome_message(channel, member, welcome_message):
@@ -55,13 +58,13 @@ async def welcome_member(client, member):
     welcome_survey_status = db.get_user_survey_progress_status_or_none(
         WELCOME_SURVEY_ID, member.id
     )
-    if welcome_survey_status == "FINISHED":
+    if welcome_survey_status == survey_status.FINISHED:
         logging.info(f"{member_to_string(member)} already finished welcome survey.")
         member_role = get_role(client, MEMBER_ROLE)
         await member.add_roles(member_role)
         return
 
-    if welcome_survey_status == "IN_PROGRESS":
+    if welcome_survey_status == survey_status.IN_PROGRESS:
         logging.info(
             f"{member_to_string(member)} has already started survey once. Clearing old survey data."
         )
@@ -222,7 +225,7 @@ async def add_reaction_on_survey_answer(
 
         logging.info(f"User {member_to_string(member)} finished survey ({survey_id}).")
 
-        await message.channel.send("Koniec dotazníka. Ďakujeme pekne 🙂")
+        await message.channel.send(SURVEY_FINISHED_MESSAGE)
     elif db.is_last_question(survey_id, question_id):
         logging.info(
             f"Sending unanswered questions to user {member_to_string(member)} on survey ({survey_id})."
@@ -235,7 +238,7 @@ async def add_reaction_on_survey_answer(
             ["- " + question for question in unanswered_questions]
         )
         embed = discord.Embed(
-            title="Ešte si neodpovedal/a na niektoré otázky, tak prosím odpovedz a potom znova klikni, že si odpovedal/a na všetky otázky. Otázky, na ktoré si neodpovedal/a:",
+            title=UNANSWERED_QUESTIONS_TEXT,
             description=embed_description,
             colour=discord.Colour(0xFFFF00),
         )
