@@ -1,12 +1,16 @@
 import logging
+
 import discord
+
 import db
-from config import (MEMBER_ROLE, NEW_MEMBER_ROLE, OLD_MEMBER_ROLE,
-                    WELCOME_SURVEY_ID)
-from db.columns import (COLUMN_ID, COLUMN_SURVEY_ANSWER_EMOJI,
-                        COLUMN_SURVEY_ANSWER_TEXT,
-                        COLUMN_SURVEY_QUESTION_ORDER,
-                        COLUMN_SURVEY_QUESTION_TEXT)
+from config import MEMBER_ROLE, NEW_MEMBER_ROLE, OLD_MEMBER_ROLE, WELCOME_SURVEY_ID
+from db.columns import (
+    COLUMN_ID,
+    COLUMN_SURVEY_ANSWER_EMOJI,
+    COLUMN_SURVEY_ANSWER_TEXT,
+    COLUMN_SURVEY_QUESTION_ORDER,
+    COLUMN_SURVEY_QUESTION_TEXT,
+)
 from log_utils import channel_to_string, member_to_string
 from utils import get_role, get_server, has_role
 
@@ -78,8 +82,13 @@ async def welcome_member(client, member):
 
 def should_send_next_question(next_question_order, answered_question_id):
     if answered_question_id is not None:
-        previous_question_order = db.get_survey_question_order_or_none(answered_question_id)
-        if previous_question_order is not None and previous_question_order + 1 != next_question_order:
+        previous_question_order = db.get_survey_question_order_or_none(
+            answered_question_id
+        )
+        if (
+            previous_question_order is not None
+            and previous_question_order + 1 != next_question_order
+        ):
             logging.info(f"Last answered question isn't the last question sent.")
             return False
 
@@ -94,7 +103,9 @@ async def send_next_question(channel, member, answered_question_id=None):
         logging.info(f"Question ({question} or answers ({answers}) are null.")
         return
 
-    if not should_send_next_question(question[COLUMN_SURVEY_QUESTION_ORDER], answered_question_id):
+    if not should_send_next_question(
+        question[COLUMN_SURVEY_QUESTION_ORDER], answered_question_id
+    ):
         logging.info(f"Not sending next question.")
         return
 
@@ -104,12 +115,17 @@ async def send_next_question(channel, member, answered_question_id=None):
     )
 
     question_embed = discord.Embed(
-        title=question[COLUMN_SURVEY_QUESTION_TEXT], description=description, colour=discord.Colour(0xFFFF00)
+        title=question[COLUMN_SURVEY_QUESTION_TEXT],
+        description=description,
+        colour=discord.Colour(0xFFFF00),
     )
 
     for answer in answers:
-        question_embed.add_field(name=answer[COLUMN_SURVEY_ANSWER_TEXT], value=answer[COLUMN_SURVEY_ANSWER_EMOJI],
-                                 inline=True)
+        question_embed.add_field(
+            name=answer[COLUMN_SURVEY_ANSWER_TEXT],
+            value=answer[COLUMN_SURVEY_ANSWER_EMOJI],
+            inline=True,
+        )
 
     message = await channel.send(embed=question_embed)
 
@@ -118,7 +134,9 @@ async def send_next_question(channel, member, answered_question_id=None):
     for answer in answers:
         await message.add_reaction(emoji=answer[COLUMN_SURVEY_ANSWER_EMOJI])
 
-    logging.info(f"Sent next question ({question[COLUMN_ID]}) to {member_to_string(member)}.")
+    logging.info(
+        f"Sent next question ({question[COLUMN_ID]}) to {member_to_string(member)}."
+    )
 
 
 async def remove_reaction_on_survey_answer(user_id, survey_id, question_id, emoji):

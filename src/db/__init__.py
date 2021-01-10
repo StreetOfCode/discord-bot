@@ -40,7 +40,9 @@ def get_survey_questions():
 
 def get_survey_question_order_or_none(question_id):
     cursor = db.cursor()
-    cursor.execute(f"SELECT _order FROM survey_question WHERE survey_question_id = {question_id}")
+    cursor.execute(
+        f"SELECT _order FROM survey_question WHERE survey_question_id = {question_id}"
+    )
 
     question = cursor.fetchone()
 
