@@ -1,5 +1,6 @@
-from config import SERVER_ID, ADMIN_ROLE
 from discord.utils import get
+
+from config import ADMIN_ROLE, SERVER_ID
 
 
 def get_member(client, member_id):
