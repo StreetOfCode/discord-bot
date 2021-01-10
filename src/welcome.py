@@ -71,10 +71,10 @@ async def welcome_member(client, member):
     await send_next_question(channel, member)
 
 
-def should_send_next_question(next_question_number, answered_question_id):
+def should_send_next_question(next_question_order, answered_question_id):
     if answered_question_id is not None:
-        previous_question_number = db.get_survey_question_number_or_none(answered_question_id)
-        if previous_question_number is not None and previous_question_number + 1 != next_question_number:
+        previous_question_order = db.get_survey_question_order_or_none(answered_question_id)
+        if previous_question_order is not None and previous_question_order + 1 != next_question_order:
             logging.info(f"Last answered question isn't the last question sent.")
             return False
 
