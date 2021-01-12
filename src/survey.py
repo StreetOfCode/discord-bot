@@ -145,7 +145,7 @@ async def add_reaction_on_survey_answer(
             await member.add_roles(survey_receive_role)
 
         if survey_id == WELCOME_SURVEY_ID:
-            welcome.update_user_roles_on_finish(client, member)
+            await welcome.update_user_roles_on_finish(client, member)
 
         db.finish_user_survey_progress(survey_id, member.id)
 
