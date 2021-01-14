@@ -3,8 +3,6 @@ import logging
 import discord
 
 import db
-import welcome
-from config import WELCOME_SURVEY_ID
 from db.columns import (
     COLUMN_ID,
     COLUMN_SURVEY_ANSWER_EMOJI,
@@ -136,16 +134,8 @@ async def add_reaction_on_survey_answer(
         logging.info(
             f"User {member_to_string(member)} answered all survey ({survey_id}) questions."
         )
-        # Add receive role if survey contains receive_role_after_finish
-        if (receive_role := db.get_survey_receive_role_or_none(survey_id)) is not None:
-            survey_receive_role = get_role(client, receive_role)
-            logging.info(
-                f"Adding role ({survey_receive_role.name}) to user {member_to_string(member)}"
-            )
-            await member.add_roles(survey_receive_role)
 
-        if survey_id == WELCOME_SURVEY_ID:
-            await welcome.update_user_roles_on_finish(client, member)
+        await add_receive_role_if_exists(client, member, survey_id)
 
         db.finish_user_survey_progress(survey_id, member.id)
 
@@ -171,3 +161,13 @@ async def add_reaction_on_survey_answer(
         await message.channel.send(embed=embed)
     elif existing_answer_to_question is None:
         await send_next_question(message.channel, member, survey_id, question_id)
+
+
+# Add receive role if survey contains receive_role_after_finish
+async def add_receive_role_if_exists(client, member, survey_id):
+    if (receive_role := db.get_survey_receive_role_or_none(survey_id)) is not None:
+        survey_receive_role = get_role(client, receive_role)
+        logging.info(
+            f"Adding role ({survey_receive_role.name}) to user {member_to_string(member)}"
+        )
+        await member.add_roles(survey_receive_role)

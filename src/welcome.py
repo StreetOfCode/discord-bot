@@ -5,9 +5,9 @@ import discord
 import db
 import survey
 import survey_status
-from config import MEMBER_ROLE, NEW_MEMBER_ROLE, OLD_MEMBER_ROLE, WELCOME_SURVEY_ID
+from config import WELCOME_SURVEY_ID
 from log_utils import channel_to_string, member_to_string
-from utils import get_role, get_server, has_role
+from utils import get_server
 
 
 async def welcome_member(client, member):
@@ -18,8 +18,7 @@ async def welcome_member(client, member):
     )
     if welcome_survey_status == survey_status.FINISHED:
         logging.info(f"{member_to_string(member)} already finished welcome survey.")
-        member_role = get_role(client, MEMBER_ROLE)
-        await member.add_roles(member_role)
+        await survey.add_receive_role_if_exists(client, member, WELCOME_SURVEY_ID)
         return
 
     if welcome_survey_status == survey_status.IN_PROGRESS:
@@ -27,10 +26,6 @@ async def welcome_member(client, member):
             f"{member_to_string(member)} has already started survey once. Clearing old survey data."
         )
         db.clear_all_user_survey_progress(WELCOME_SURVEY_ID, member.id)
-
-    if not has_role(member, OLD_MEMBER_ROLE):
-        new_member_role = get_role(client, NEW_MEMBER_ROLE)
-        await member.add_roles(new_member_role)
 
     channel = await _create_welcome_channel(get_server(client), member)
 
@@ -71,18 +66,3 @@ async def _send_welcome_message(channel, member, welcome_message):
         description=welcome_message,
     )
     await channel.send(embed=embed)
-
-
-async def update_user_roles_on_finish(client, member):
-    if has_role(member, OLD_MEMBER_ROLE):
-        old_member_role = get_role(client, OLD_MEMBER_ROLE)
-        logging.info(
-            f"Removing role ({old_member_role.name}) from user {member_to_string(member)}"
-        )
-        await member.remove_roles(old_member_role)
-    else:
-        new_member_role = get_role(client, NEW_MEMBER_ROLE)
-        logging.info(
-            f"Removing role ({new_member_role.name}) from user {member_to_string(member)}"
-        )
-        await member.remove_roles(new_member_role)
