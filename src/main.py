@@ -1,6 +1,7 @@
 import logging
 
 import discord
+import admin_commands
 from discord.ext import commands
 
 import db
@@ -21,27 +22,12 @@ client = commands.Bot(command_prefix="/", intents=intents)
 
 @client.command(name="send-welcome-survey")
 async def send_welcome_survey_command(context):
-    """
-    Only member with admin role can run this command
-    Command sends welcome survey to all users who hasn't started survey and don't have admin role
-    """
-    logging.info("Executing send-welcome-survey command.")
+    await admin_commands.send_welcome_survey_command(client, context)
 
-    sent_to = []
-    if is_admin(context.author):
-        users_that_started_survey = db.get_all_user_ids_from_survey_progress(
-            WELCOME_SURVEY_ID
-        )
-        for member in get_server(client).members:
-            if member != client.user and member.id not in users_that_started_survey:
-                if not is_admin(member):
-                    await welcome_member(client, member)
-                    sent_to.append(member.display_name)
-        await context.channel.send(f"Sent to {sent_to}")
-    else:
-        logging.error(
-            f"Unauthorized member {context.author} called send-welcome-survey command"
-        )
+
+@client.command(name="ping-unanswered-survey")
+async def ping_unanswered_survey_command(context):
+    await admin_commands.ping_users_with_unanswered_questions_command(client, context)
 
 
 @client.event
