@@ -266,3 +266,46 @@ def get_unanswered_question_texts(survey_id, user_id):
     )
 
     return [res[0] for res in cursor.fetchall()]
+
+
+def get_all_in_progress_users_with_channel_from_survey_progress_created_older_than(
+    survey_id, minus_interval
+):
+    """
+    Returns map of user -> channel where every user started but not finished survey which was created no longer than {minus_interval}
+    """
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT user_id, channel_id from user_survey_progress WHERE survey_id={survey_id} and status = '{survey_status.IN_PROGRESS}' and created_at < (NOW() - INTERVAL '{minus_interval}')"
+    )
+    result = {}
+    for res in cursor.fetchall():
+        result[res[0]] = res[1]
+    return result
+
+
+def get_all_users_with_no_answer(survey_id, user_ids):
+    """
+    Gets user_ids of every user who is IN user_ids from param but has no answer to any survey_question based on survey_id
+    """
+
+    # We could have just used IN {tuple(user_ids)} but problem is when user_ids have length of 1 item,
+    # then python adds a trailing comma after value, i.e (123,) and then psql syntax fails
+    users_in = "("
+    for user_id in user_ids:
+        if len(users_in) > 1:
+            users_in += ", " + str(user_id)
+        else:
+            # for the first element
+            users_in += str(user_id)
+    users_in += ")"
+
+    #  users who are IN {users_in} and NOT IN (users who have answered at least one survey question)
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT DISTINCT(user_id) FROM sent_survey_question WHERE user_id IN {users_in} AND user_id NOT IN ("
+        f"SELECT DISTINCT(user_id) FROM user_survey_answer WHERE survey_question_id IN "
+        f"(SELECT survey_question_id FROM survey_question WHERE survey_id={survey_id})"
+        f")"
+    )
+    return [res[0] for res in cursor.fetchall()]
