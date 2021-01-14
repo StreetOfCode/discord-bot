@@ -4,9 +4,9 @@ import discord
 from discord.ext import commands
 
 import db
-from config import OLD_MEMBER_ROLE, TOKEN, WELCOME_SURVEY_ID
+from config import TOKEN, WELCOME_SURVEY_ID
 from survey import add_reaction_on_survey_answer, remove_reaction_on_survey_answer
-from utils import get_role, get_server, is_admin
+from utils import get_server, is_admin
 from welcome import welcome_member
 
 logging.basicConfig(
@@ -24,7 +24,6 @@ async def send_welcome_survey_command(context):
     """
     Only member with admin role can run this command
     Command sends welcome survey to all users who hasn't started survey and don't have admin role
-    Also it gives them old_member role
     """
     logging.info("Executing send-welcome-survey command.")
 
@@ -33,11 +32,9 @@ async def send_welcome_survey_command(context):
         users_that_started_survey = db.get_all_user_ids_from_survey_progress(
             WELCOME_SURVEY_ID
         )
-        old_member_role = get_role(client, OLD_MEMBER_ROLE)
         for member in get_server(client).members:
             if member != client.user and member.id not in users_that_started_survey:
                 if not is_admin(member):
-                    await member.add_roles(old_member_role)
                     await welcome_member(client, member)
                     sent_to.append(member.display_name)
         await context.channel.send(f"Sent to {sent_to}")
