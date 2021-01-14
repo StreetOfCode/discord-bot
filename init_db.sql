@@ -63,7 +63,7 @@ CREATE TABLE user_survey_answer(
 -------------------  WELCOME SURVEY  ---------------------
 
 INSERT INTO survey(survey_info, survey_intro_message, receive_role_after_finish)
-VALUES ('welcome survey', E'Ahoj, ja som Street of Code bot a chcem sa ťa opýtať pár otázok. Tvoje odpovede vidia iba admini.\n\nCieľom tohto dotazníka je zistiť pár základných informácií. Keď vyplníš celý dotazník, tak získaš práva, aby si mohol alebo mohla vidieť všetky ostatné kanály v Discorde.\n\nSmajlíky ber s prosím s rezervou. Ďakujem :)', 'member');
+VALUES ('welcome survey', E'Ahoj, ja som Street of Code bot a chcem sa ťa opýtať pár otázok. Tvoje odpovede vidia iba admini.\n\nCieľom tohto dotazníka je zistiť pár základných informácií.\n\nSmajlíky ber s prosím s rezervou. Ďakujem :)', 'member');
 
 
 INSERT INTO survey_question(survey_id, _order, text, is_multiple_choice)
@@ -130,6 +130,6 @@ INSERT INTO survey_answer(survey_question_id, _order, text, emoji)
 VALUES(6, 2, 'Nie, ďakujem', '👎');
 
 INSERT INTO survey_question(survey_id, _order, text, is_multiple_choice)
-VALUES(1, 7, 'Odpovedal/a si na všetky otázky? Ked pridáš 👍, tak tieto odpovede už nebudeš môcť meniť a staneš sa členom/členkou nášho Discordu.', FALSE);
+VALUES(1, 7, 'Odpovedal/a si na všetky otázky? Ked pridáš 👍, tak tieto odpovede už nebudeš môcť meniť a dokončíš dotazník.', FALSE);
 INSERT INTO survey_answer(survey_question_id, _order, text, emoji)
 VALUES(7, 1, 'Áno', '👍');
