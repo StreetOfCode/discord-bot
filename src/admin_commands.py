@@ -4,8 +4,10 @@ from utils import get_server, is_admin
 from config import WELCOME_SURVEY_ID, PING_UNANSWERED_SURVEY_OLDER_THAN
 from welcome import welcome_member
 
+PING_UNANSWERED_SURVEY_MESSAGE = "Čauko, iba pripomínam, že čakám na tvoje odpovede :)"
 
-async def send_welcome_survey_command(client, context):
+
+async def send_welcome_survey(client, context):
     """
     Only member with admin role can run this command
     Command sends welcome survey to all users who hasn't started survey and don't have admin role
@@ -14,11 +16,11 @@ async def send_welcome_survey_command(client, context):
 
     sent_to = []
     if is_admin(context.author):
-        users_that_started_survey = db.get_all_user_ids_from_survey_progress(
+        users_who_started_survey = db.get_all_user_ids_from_survey_progress(
             WELCOME_SURVEY_ID
         )
         for member in get_server(client).members:
-            if member != client.user and member.id not in users_that_started_survey:
+            if member != client.user and member.id not in users_who_started_survey:
                 if not is_admin(member):
                     await welcome_member(client, member)
                     sent_to.append(member.display_name)
@@ -29,7 +31,7 @@ async def send_welcome_survey_command(client, context):
         )
 
 
-async def ping_users_with_unanswered_questions_command(client, context):
+async def ping_users_with_unanswered_questions(client, context):
     """
     Only member with admin role can run this command
     Command pings all users who have started welcome_survey (before interval) but haven't answered any questions
@@ -47,9 +49,7 @@ async def ping_users_with_unanswered_questions_command(client, context):
             )
             for user in users_with_no_answers:
                 channel = client.get_channel(users_from[user])
-                await channel.send(
-                    "Čauko, iba pripomínam, že čakám na tvoje odpovede :)"
-                )
+                await channel.send(PING_UNANSWERED_SURVEY_MESSAGE)
                 pinged.append(user)
         await context.channel.send(f"Pinged {len(pinged)} users")
     else:
