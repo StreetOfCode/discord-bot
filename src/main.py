@@ -22,12 +22,12 @@ client = commands.Bot(command_prefix="/", intents=intents)
 
 @client.command(name="send-welcome-survey")
 async def send_welcome_survey_command(context):
-    await admin_commands.send_welcome_survey_command(client, context)
+    await admin_commands.send_welcome_survey(client, context)
 
 
 @client.command(name="ping-unanswered-survey")
 async def ping_unanswered_survey_command(context):
-    await admin_commands.ping_users_with_unanswered_questions_command(client, context)
+    await admin_commands.ping_users_with_unanswered_questions(client, context)
 
 
 @client.event

@@ -123,14 +123,15 @@ def clear_all_user_survey_progress(survey_id, user_id):
     survey_question_cursor.execute(
         f"SELECT survey_question_id from survey_question WHERE survey_id={survey_id}"
     )
-    survey_question_ids = tuple([res[0] for res in survey_question_cursor.fetchall()])
+    survey_question_ids = [res[0] for res in survey_question_cursor.fetchall()]
+    survey_question_ids_to_string = ",".join(map(str, survey_question_ids))
 
     delete_cursor = db.cursor()
     delete_cursor.execute(
-        f"DELETE from sent_survey_question WHERE user_id={user_id} AND survey_question_id IN {survey_question_ids}"
+        f"DELETE from sent_survey_question WHERE user_id={user_id} AND survey_question_id IN ({survey_question_ids_to_string})"
     )
     delete_cursor.execute(
-        f"DELETE from user_survey_answer WHERE user_id={user_id} AND survey_question_id IN {survey_question_ids}"
+        f"DELETE from user_survey_answer WHERE user_id={user_id} AND survey_question_id IN ({survey_question_ids_to_string})"
     )
     delete_cursor.execute(
         f"DELETE from user_survey_progress WHERE survey_id={survey_id} AND user_id={user_id}"
@@ -278,34 +279,22 @@ def get_all_in_progress_users_with_channel_from_survey_progress_created_older_th
     cursor.execute(
         f"SELECT user_id, channel_id from user_survey_progress WHERE survey_id={survey_id} and status = '{survey_status.IN_PROGRESS}' and created_at < (NOW() - INTERVAL '{minus_interval}')"
     )
-    result = {}
-    for res in cursor.fetchall():
-        result[res[0]] = res[1]
-    return result
+    return {user_id: channel_id for user_id, channel_id in cursor.fetchall()}
 
 
 def get_all_users_with_no_answer(survey_id, user_ids):
     """
     Gets user_ids of every user who is IN user_ids from param but has no answer to any survey_question based on survey_id
     """
-
-    # We could have just used IN {tuple(user_ids)} but problem is when user_ids have length of 1 item,
-    # then python adds a trailing comma after value, i.e (123,) and then psql syntax fails
-    users_in = "("
-    for user_id in user_ids:
-        if len(users_in) > 1:
-            users_in += ", " + str(user_id)
-        else:
-            # for the first element
-            users_in += str(user_id)
-    users_in += ")"
-
     #  users who are IN {users_in} and NOT IN (users who have answered at least one survey question)
     cursor = db.cursor()
     cursor.execute(
-        f"SELECT DISTINCT(user_id) FROM sent_survey_question WHERE user_id IN {users_in} AND user_id NOT IN ("
-        f"SELECT DISTINCT(user_id) FROM user_survey_answer WHERE survey_question_id IN "
-        f"(SELECT survey_question_id FROM survey_question WHERE survey_id={survey_id})"
-        f")"
+        f"""
+        SELECT DISTINCT(user_id) FROM sent_survey_question WHERE user_id IN ({",".join(map(str, user_ids))}) AND user_id NOT IN (
+            SELECT DISTINCT(user_id) FROM user_survey_answer WHERE survey_question_id IN (
+                SELECT survey_question_id FROM survey_question WHERE survey_id={survey_id}
+            )
+        )
+        """
     )
     return [res[0] for res in cursor.fetchall()]
