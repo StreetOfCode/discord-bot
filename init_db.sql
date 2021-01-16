@@ -21,7 +21,7 @@ CREATE TYPE user_survey_status_type AS ENUM('IN_PROGRESS', 'FINISHED');
 CREATE TABLE user_survey_progress(
     user_survey_progress_id SERIAL PRIMARY KEY,
     survey_id INT REFERENCES survey(survey_id) ON DELETE CASCADE NOT NULL,
-    user_id BIGINT NOT NULL UNIQUE,
+    user_id BIGINT NOT NULL,
     channel_id BIGINT NOT NULL,
     status user_survey_status_type NOT NULL DEFAULT 'IN_PROGRESS',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
