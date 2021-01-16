@@ -30,6 +30,11 @@ async def ping_unanswered_survey_command(context):
     await admin_commands.ping_users_with_unanswered_questions(client, context)
 
 
+@client.command(name="delete-finished-surveys-channels")
+async def delete_finished_surveys_channels(context):
+    await admin_commands.delete_finished_surveys_channels(client, context)
+
+
 @client.event
 async def on_ready():
     logging.info("We have logged in as {0.user}".format(client))

@@ -155,6 +155,14 @@ def finish_user_survey_progress(survey_id, user_id):
     db.commit()
 
 
+def set_user_survey_progress_status_to_channel_deleted(channel_id):
+    cursor = db.cursor()
+    cursor.execute(
+        f"UPDATE user_survey_progress SET status='{survey_status.FINISHED_CHANNEL_DELETED}' WHERE channel_id={channel_id}"
+    )
+    db.commit()
+
+
 def add_answer(user_id, survey_question_id, survey_answer_id):
     cursor = db.cursor()
     cursor.execute(
@@ -297,4 +305,13 @@ def get_all_users_with_no_answer(survey_id, user_ids):
         )
         """
     )
+    return [res[0] for res in cursor.fetchall()]
+
+
+def get_completed_survey_channel_ids_older_than(minus_interval):
+    cursor = db.cursor()
+    cursor.execute(
+        f"SELECT channel_id FROM user_survey_progress u WHERE status='{survey_status.FINISHED}' AND finished_at < (NOW() - INTERVAL '{minus_interval}')"
+    )
+
     return [res[0] for res in cursor.fetchall()]

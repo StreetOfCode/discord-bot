@@ -1,7 +1,12 @@
 import logging
+
 import db
+from config import (
+    DELETE_FINISHED_SURVEYS_OLDER_THAN,
+    PING_UNANSWERED_SURVEY_OLDER_THAN,
+    WELCOME_SURVEY_ID,
+)
 from utils import get_server, is_admin
-from config import WELCOME_SURVEY_ID, PING_UNANSWERED_SURVEY_OLDER_THAN
 from welcome import welcome_member
 
 PING_UNANSWERED_SURVEY_MESSAGE = "Čauko, iba pripomínam, že čakám na tvoje odpovede :)"
@@ -55,4 +60,36 @@ async def ping_users_with_unanswered_questions(client, context):
     else:
         logging.error(
             f"Unauthorized member {context.author} called ping-unanswered-survey command"
+        )
+
+
+async def delete_finished_surveys_channels(client, context):
+    """
+    Only member with admin role can run this command
+    Command deletes channl of surveys which have been completed before DELETE_SURVEYS_OLDER_THAN
+    """
+    logging.info("Executing delete_finished_surveys_channels command.")
+
+    deleted_channels = []
+    if is_admin(context.author):
+        finished_surveys_channel_ids = db.get_completed_survey_channel_ids_older_than(
+            DELETE_FINISHED_SURVEYS_OLDER_THAN
+        )
+        for channel_id in finished_surveys_channel_ids:
+            channel = client.get_channel(channel_id)
+            if channel is None:
+                logging.info(
+                    f"Channel ({channel_id}) not found on server but is in finished_surveys_channel_ids."
+                )
+                continue
+
+            logging.info(f"Deleting channel ({channel_id}).")
+            await channel.delete()
+            db.set_user_survey_progress_status_to_channel_deleted(channel_id)
+            deleted_channels.append(channel_id)
+
+        await context.channel.send(f"Deleted {len(deleted_channels)} channels.")
+    else:
+        logging.error(
+            f"Unauthorized member {context.author} called delete_finished_surveys_channels command"
         )
