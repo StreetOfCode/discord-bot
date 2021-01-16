@@ -16,7 +16,7 @@ CREATE TABLE survey(
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TYPE user_survey_status_type AS ENUM('IN_PROGRESS', 'FINISHED');
+CREATE TYPE user_survey_status_type AS ENUM('IN_PROGRESS', 'FINISHED', 'FINISHED_CHANNEL_DELETED');
 
 CREATE TABLE user_survey_progress(
     user_survey_progress_id SERIAL PRIMARY KEY,
