@@ -16,7 +16,10 @@ async def welcome_member(client, member):
     welcome_survey_status = db.get_user_survey_progress_status_or_none(
         WELCOME_SURVEY_ID, member.id
     )
-    if welcome_survey_status in [survey_status.FINISHED, survey_status.FINISHED_CHANNEL_DELETED]:
+    if welcome_survey_status in [
+        survey_status.FINISHED,
+        survey_status.FINISHED_CHANNEL_DELETED,
+    ]:
         logging.info(f"{member_to_string(member)} already finished welcome survey.")
         await survey.add_receive_role_if_exists(client, member, WELCOME_SURVEY_ID)
         return
