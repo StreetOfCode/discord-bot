@@ -1,13 +1,13 @@
 import logging
 
 import discord
-import admin_commands
 from discord.ext import commands
 
+import admin_commands
 import db
-from config import TOKEN, WELCOME_SURVEY_ID
+from config import TOKEN
 from survey import add_reaction_on_survey_answer, remove_reaction_on_survey_answer
-from utils import get_server, is_admin
+from utils import get_server
 from welcome import welcome_member
 
 logging.basicConfig(
