@@ -150,7 +150,7 @@ def create_user_survey_progress(survey_id, user_id, channel_id):
 def finish_user_survey_progress(survey_id, user_id):
     cursor = db.cursor()
     cursor.execute(
-        f"UPDATE user_survey_progress SET status='{survey_status.FINISHED}' WHERE survey_id={survey_id} AND user_id={user_id}"
+        f"UPDATE user_survey_progress SET status='{survey_status.FINISHED}', finished_at=NOW() WHERE survey_id={survey_id} AND user_id={user_id}"
     )
     db.commit()
 
