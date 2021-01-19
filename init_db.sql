@@ -54,6 +54,7 @@ CREATE TABLE sent_survey_question(
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+
 CREATE TABLE user_survey_answer(
   user_id BIGINT NOT NULL,
   survey_question_id INT REFERENCES survey_question(survey_question_id) ON DELETE CASCADE NOT NULL,
@@ -63,8 +64,8 @@ CREATE TABLE user_survey_answer(
 
 -------------------  WELCOME SURVEY  ---------------------
 
-INSERT INTO survey(survey_info, survey_intro_message, receive_role_after_finish)
-VALUES ('welcome survey', E'Ahoj, ja som Street of Code bot a chcem sa ťa opýtať pár otázok. Tvoje odpovede vidia iba admini.\n\nCieľom tohto dotazníka je zistiť pár základných informácií.\n\nSmajlíky ber s prosím s rezervou. Ďakujem :)', 'member');
+INSERT INTO survey(survey_info, survey_intro_message)
+VALUES ('welcome survey', E'Ahoj, ja som Street of Code bot a chcem sa ťa opýtať pár otázok. Tvoje odpovede vidia iba admini.\n\nCieľom tohto dotazníka je zistiť pár základných informácií.\n\nSmajlíky ber s prosím s rezervou. Ďakujem :)');
 
 
 INSERT INTO survey_question(survey_id, _order, text, is_multiple_choice)
