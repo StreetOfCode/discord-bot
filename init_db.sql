@@ -120,7 +120,7 @@ VALUES(5, 1, 'Podcasty', '🎙️');
 INSERT INTO survey_answer(survey_question_id, _order, text, emoji)
 VALUES(5, 2, 'Videá o programovaní', '📷');
 INSERT INTO survey_answer(survey_question_id, _order, text, emoji)
-VALUES(5, 3, 'Články o programovaná', '📝');
+VALUES(5, 3, 'Články o programovaní', '📝');
 INSERT INTO survey_answer(survey_question_id, _order, text, emoji)
 VALUES(5, 4, 'Kurzy o programovaní', '🎥');
 
