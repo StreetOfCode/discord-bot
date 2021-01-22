@@ -42,7 +42,9 @@ async def ping_users_with_unanswered_questions(client, context):
     """
     pinged = []
     if is_admin(context.author):
-        logging.info(f"Executing ping-unanswered-survey. OLDER_THAN is set to {PING_UNANSWERED_SURVEY_OLDER_THAN}")
+        logging.info(
+            f"Executing ping-unanswered-survey. OLDER_THAN is set to {PING_UNANSWERED_SURVEY_OLDER_THAN}"
+        )
         users_from = db.get_all_in_progress_users_with_channel_from_survey_progress_created_older_than(
             WELCOME_SURVEY_ID, PING_UNANSWERED_SURVEY_OLDER_THAN
         )
@@ -68,7 +70,9 @@ async def delete_finished_surveys_channels(client, context):
     """
     deleted_channels = []
     if is_admin(context.author):
-        logging.info(f"Executing delete_finished_surveys_channels command. OLDER_THAN is set to {DELETE_FINISHED_SURVEYS_OLDER_THAN}")
+        logging.info(
+            f"Executing delete_finished_surveys_channels command. OLDER_THAN is set to {DELETE_FINISHED_SURVEYS_OLDER_THAN}"
+        )
         finished_surveys_channel_ids = db.get_completed_survey_channel_ids_older_than(
             DELETE_FINISHED_SURVEYS_OLDER_THAN
         )

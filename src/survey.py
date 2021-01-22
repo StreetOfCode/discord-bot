@@ -9,7 +9,7 @@ from db.columns import (
     COLUMN_SURVEY_ANSWER_TEXT,
     COLUMN_SURVEY_QUESTION_ORDER,
     COLUMN_SURVEY_QUESTION_TEXT,
-    COLUMN_SURVEY_QUESTION_IS_MULTIPLE_CHOICE
+    COLUMN_SURVEY_QUESTION_IS_MULTIPLE_CHOICE,
 )
 from log_utils import member_to_string
 from utils import get_role
