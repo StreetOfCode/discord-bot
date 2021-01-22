@@ -2,6 +2,7 @@ import logging
 
 import discord
 from discord.ext import commands
+from discord.ext.commands import CommandNotFound
 
 import admin_commands
 import db
@@ -18,6 +19,7 @@ intents = discord.Intents.default()
 intents.members = True
 
 client = commands.Bot(command_prefix="/", intents=intents)
+client.remove_command("help")
 
 
 @client.command(name="send-welcome-survey")
@@ -33,6 +35,14 @@ async def ping_unanswered_survey_command(context):
 @client.command(name="delete-finished-surveys-channels")
 async def delete_finished_surveys_channels(context):
     await admin_commands.delete_finished_surveys_channels(client, context)
+
+
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, CommandNotFound):
+        # Don't log command not found everytime someone calls /whatever
+        return
+    raise error
 
 
 @client.event
@@ -59,12 +69,12 @@ async def on_raw_reaction_add(payload):
     guild = get_server(client)
     if payload.member.id != guild.me.id:
         if (
-            survey_id := db.get_survey_id_from_user_survey_progress_or_none(
-                payload.member.id, payload.channel_id
-            )
+                survey_id := db.get_survey_id_from_user_survey_progress_or_none(
+                    payload.member.id, payload.channel_id
+                )
         ) is not None:
             if (
-                question_id := db.get_survey_question_id_or_none(payload.message_id)
+                    question_id := db.get_survey_question_id_or_none(payload.message_id)
             ) is not None:
                 channel = await client.fetch_channel(payload.channel_id)
                 message = await channel.fetch_message(payload.message_id)
@@ -83,12 +93,12 @@ async def on_raw_reaction_remove(payload):
     guild = get_server(client)
     if payload.user_id != guild.me.id:
         if (
-            survey_id := db.get_survey_id_from_user_survey_progress_or_none(
-                payload.user_id, payload.channel_id
-            )
+                survey_id := db.get_survey_id_from_user_survey_progress_or_none(
+                    payload.user_id, payload.channel_id
+                )
         ) is not None:
             if (
-                question_id := db.get_survey_question_id_or_none(payload.message_id)
+                    question_id := db.get_survey_question_id_or_none(payload.message_id)
             ) is not None:
                 await remove_reaction_on_survey_answer(
                     user_id=payload.user_id,
