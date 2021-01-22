@@ -49,11 +49,8 @@ async def ping_users_with_unanswered_questions(client, context):
             WELCOME_SURVEY_ID, PING_UNANSWERED_SURVEY_OLDER_THAN
         )
         if len(users_from) > 0:
-            users_with_no_answers = db.get_all_users_with_no_answer(
-                WELCOME_SURVEY_ID, users_from.keys()
-            )
-            for user in users_with_no_answers:
-                channel = client.get_channel(users_from[user])
+            for user, user_channel in users_from.items():
+                channel = client.get_channel(user_channel)
                 await channel.send(PING_UNANSWERED_SURVEY_MESSAGE)
                 pinged.append(user)
         await context.channel.send(f"Pinged {len(pinged)} users")

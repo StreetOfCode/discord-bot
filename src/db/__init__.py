@@ -290,24 +290,6 @@ def get_all_in_progress_users_with_channel_from_survey_progress_created_older_th
     return {user_id: channel_id for user_id, channel_id in cursor.fetchall()}
 
 
-def get_all_users_with_no_answer(survey_id, user_ids):
-    """
-    Gets user_ids of every user who is IN user_ids from param but has no answer to any survey_question based on survey_id
-    """
-    #  users who are IN {users_in} and NOT IN (users who have answered at least one survey question)
-    cursor = db.cursor()
-    cursor.execute(
-        f"""
-        SELECT DISTINCT(user_id) FROM sent_survey_question WHERE user_id IN ({",".join(map(str, user_ids))}) AND user_id NOT IN (
-            SELECT DISTINCT(user_id) FROM user_survey_answer WHERE survey_question_id IN (
-                SELECT survey_question_id FROM survey_question WHERE survey_id={survey_id}
-            )
-        )
-        """
-    )
-    return [res[0] for res in cursor.fetchall()]
-
-
 def get_completed_survey_channel_ids_older_than(minus_interval):
     cursor = db.cursor()
     cursor.execute(
