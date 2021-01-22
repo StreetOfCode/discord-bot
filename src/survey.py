@@ -9,6 +9,7 @@ from db.columns import (
     COLUMN_SURVEY_ANSWER_TEXT,
     COLUMN_SURVEY_QUESTION_ORDER,
     COLUMN_SURVEY_QUESTION_TEXT,
+    COLUMN_SURVEY_QUESTION_IS_MULTIPLE_CHOICE
 )
 from log_utils import member_to_string
 from utils import get_role
@@ -32,9 +33,9 @@ async def send_next_question(channel, member, survey_id, answered_question_id=No
         logging.info(f"Not sending next question.")
         return
 
-    is_multiple_choice_question = question[COLUMN_SURVEY_QUESTION_TEXT]
+    is_multiple_choice_question = question[COLUMN_SURVEY_QUESTION_IS_MULTIPLE_CHOICE]
     description = (
-        MULTIPLE_CHOICE_EMBED_DESCRIPTION if is_multiple_choice_question else ""
+        MULTIPLE_CHOICE_EMBED_DESCRIPTION if is_multiple_choice_question is True else ""
     )
 
     question_embed = discord.Embed(
