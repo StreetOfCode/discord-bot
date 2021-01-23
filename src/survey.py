@@ -35,7 +35,7 @@ async def send_next_question(channel, member, survey_id, answered_question_id=No
 
     is_multiple_choice_question = question[COLUMN_SURVEY_QUESTION_IS_MULTIPLE_CHOICE]
     description = (
-        MULTIPLE_CHOICE_EMBED_DESCRIPTION if is_multiple_choice_question is True else ""
+        MULTIPLE_CHOICE_EMBED_DESCRIPTION if is_multiple_choice_question else ""
     )
 
     question_embed = discord.Embed(
