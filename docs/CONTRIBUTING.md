@@ -7,7 +7,8 @@ what the best way to do that is.
 - File a Pull Request (PR) with a number of well-defined clearly described commits (following what is described
   in [this article](https://chris.beams.io/posts/git-commit/) is a good start). Multiple commits per PR are allowed, but
   please do not include revert commits, etc. Use rebase.
-- Make sure that the code is well formatted - use `iSort` and `Black` for that:
+- Make sure that the code is well formatted - use `iSort` and `Black` for that. You can either setup your editor to use
+  them or run:
 
 ```
 pipenv shell
