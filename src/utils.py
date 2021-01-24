@@ -1,6 +1,6 @@
 from discord.utils import get
 
-from config import ADMIN_ROLE, SERVER_ID
+from config import SERVER_ID
 
 
 def get_member(client, member_id):
@@ -16,10 +16,6 @@ def get_channel(client, member_id):
 
 def get_server(client):
     return next(g for g in client.guilds if g.id == SERVER_ID)
-
-
-def is_admin(member):
-    return ADMIN_ROLE in [role.name for role in member.roles]
 
 
 def has_role(member, role_name):
