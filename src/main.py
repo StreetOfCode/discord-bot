@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 
-import admin_commands
+import cogs
 import db
 from config import TOKEN
 from survey import add_reaction_on_survey_answer, remove_reaction_on_survey_answer
@@ -19,22 +19,10 @@ intents = discord.Intents.default()
 intents.members = True
 
 client = commands.Bot(command_prefix="/", intents=intents)
-client.remove_command("help")
 
-
-@client.command(name="send-welcome-survey")
-async def send_welcome_survey_command(context):
-    await admin_commands.send_welcome_survey(client, context)
-
-
-@client.command(name="ping-unanswered-survey")
-async def ping_unanswered_survey_command(context):
-    await admin_commands.ping_users_with_unanswered_questions(client, context)
-
-
-@client.command(name="delete-finished-surveys-channels")
-async def delete_finished_surveys_channels(context):
-    await admin_commands.delete_finished_surveys_channels(client, context)
+_cogs = [cogs.admin_commands.AdminCommands(client)]
+for cog in _cogs:
+    client.add_cog(cog)
 
 
 @client.event
