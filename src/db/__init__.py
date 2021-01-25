@@ -13,26 +13,6 @@ def is_multiple_choice_survey_question(question_id):
     return question[0] if question is not None else False
 
 
-# TODO: unused - remove
-def get_survey_questions():
-    with db.cursor() as questions_cursor:
-        questions_cursor.execute("SELECT * FROM survey_question")
-
-        result = []
-        question = questions_cursor.fetchone()
-        while question is not None:
-            with db.cursor() as answers_cursor:
-                answers_cursor.execute(
-                    f"SELECT * FROM survey_answer WHERE survey_question_id={question[0]}"
-                )
-                answers = answers_cursor.fetchall()
-                result.append((question, answers))
-
-                question = questions_cursor.fetchone()
-
-        return result
-
-
 def get_survey_question_order_or_none(question_id):
     question = _fetchone(
         f"SELECT _order FROM survey_question WHERE survey_question_id = {question_id}"
