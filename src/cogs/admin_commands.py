@@ -1,17 +1,17 @@
-from discord.ext import commands
-import discord.utils
-
 import logging
 
-import src.db as db
-from src.config import (
+import discord.utils
+from discord.ext import commands
+
+import db as db
+from config import (
+    ADMIN_ROLE_ID,
     DELETE_FINISHED_SURVEYS_OLDER_THAN,
     PING_UNANSWERED_SURVEY_OLDER_THAN,
     WELCOME_SURVEY_ID,
-    ADMIN_ROLE_ID,
 )
-from src.utils import get_server
-from src.welcome import welcome_member
+from utils import get_server
+from welcome import welcome_member
 
 PING_UNANSWERED_SURVEY_MESSAGE = "Čauko, iba pripomínam, že čakám na tvoje odpovede :)"
 
