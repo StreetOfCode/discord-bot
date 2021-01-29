@@ -5,12 +5,15 @@ verify_ssl = true
 
 [dev-packages]
 isort = "*"
+black = "*"
 
 [packages]
 discord = "*"
 psycopg2 = "*"
-pyyaml = "*"
 python-dotenv = "*"
 
 [requires]
 python_version = "3.9"
+
+[pipenv]
+allow_prereleases = true
