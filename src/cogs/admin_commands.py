@@ -1,9 +1,11 @@
 import logging
+import random
 
 import discord.utils
 from discord.ext import commands
 
 import db as db
+import teams as teams
 from config import (
     ADMIN_ROLE_ID,
     DELETE_FINISHED_SURVEYS_OLDER_THAN,
@@ -14,6 +16,8 @@ from utils import get_server
 from welcome import welcome_member
 
 PING_UNANSWERED_SURVEY_MESSAGE = "Čauko, iba pripomínam, že čakám na tvoje odpovede :)"
+TEAMS_EMBED_TITLE = "Vytvorené tímy"
+CHANNEL_NOT_FOUND_ERROR_MESSAGE = "Zadaný channel som nenašiel!"
 
 
 class AdminCommands(commands.Cog):
@@ -88,3 +92,37 @@ class AdminCommands(commands.Cog):
             deleted_channels.append(channel_id)
 
         await ctx.channel.send(f"Deleted {len(deleted_channels)} channels.")
+
+    @commands.command(name="create-channel-teams")
+    @commands.has_role(ADMIN_ROLE_ID)
+    async def create_channel_teams(self, ctx, channel_id, number_of_teams=2):
+        logging.info(
+            f"Executing create-channel-teams command. Channel ID: {channel_id}. Number of teams: {number_of_teams}."
+        )
+
+        channel = self.bot.get_channel(int(channel_id))
+        if channel is None:
+            logging.info(f"Channel ({channel_id}) not found.")
+            await ctx.channel.send(CHANNEL_NOT_FOUND_ERROR_MESSAGE)
+            return
+
+        member_names = [member.display_name for member in channel.members]
+
+        created_teams = teams.create(member_names, number_of_teams, random.shuffle)
+
+        teams_embed = discord.Embed(
+            title=TEAMS_EMBED_TITLE,
+            colour=discord.Colour(0xFFFF00),
+        )
+        for i, team in enumerate(created_teams):
+            if len(team) == 0:
+                continue
+
+            team_name = f"Team {i + 1}"
+            team_members_string = "\n".join(team)
+
+            teams_embed.add_field(
+                name=team_name, value=team_members_string, inline=True
+            )
+
+        await ctx.channel.send(embed=teams_embed)
