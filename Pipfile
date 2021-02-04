@@ -12,6 +12,7 @@ pytest = "*"
 discord = "*"
 psycopg2 = "*"
 python-dotenv = "*"
+yoyo-migrations = "*"
 
 [requires]
 python_version = "3.9"

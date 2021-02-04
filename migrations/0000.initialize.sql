@@ -1,13 +1,3 @@
------------------- TABLE DEFINITIONS ---------------
-DROP TYPE IF EXISTS user_survey_status_type CASCADE;
-DROP TABLE IF EXISTS survey CASCADE;
-DROP TABLE IF EXISTS user_survey_progress CASCADE;
-DROP TABLE IF EXISTS survey_question CASCADE;
-DROP TABLE IF EXISTS survey_answer CASCADE;
-DROP TABLE IF EXISTS sent_survey_question CASCADE;
-DROP TABLE IF EXISTS user_survey_answer CASCADE;
-
-
 CREATE TABLE survey(
     survey_id SERIAL PRIMARY KEY,
     survey_info TEXT NOT NULL,
