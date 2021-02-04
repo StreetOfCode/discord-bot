@@ -16,11 +16,14 @@ pipenv install
 
 ### Database
 
-Setup a PostgreSQL database server locally. Create a database for the Discord bot and run `init_db.sql`. Either copy and
-paste the script or run:
-
+Setup a PostgreSQL database server locally. Create a database for the Discord bot. Copy `yoyo-local.ini.template` to `yoyo-local.ini`:
 ```
-psql discord_bot -f init_db.sql
+cp yoyo-local.ini.template yoyo-local.ini
+```
+
+Set the `database` variable in that file and run migrations:
+```
+yoyo apply
 ```
 
 ### Environment variables
