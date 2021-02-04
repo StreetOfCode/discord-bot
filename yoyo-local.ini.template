@@ -1,0 +1,2 @@
+[DEFAULT]
+database = postgresql://USER:PASSWORD@localhost/discord_bot
