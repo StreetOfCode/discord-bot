@@ -43,6 +43,32 @@ def get_next_survey_question(user_id, survey_id):
     return question, answers
 
 
+def get_answer_alias_survey_answer_id(alias):
+    survey_answer_id = _fetchone(
+        f"SELECT survey_answer_id FROM survey_answer WHERE alias='{alias}'"
+    )
+    return _get_first_or_none(survey_answer_id)
+
+
+def get_survey_channel_name_suffix(survey_id):
+    channel_name_suffix = _fetchone(
+        f"SELECT channel_name_suffix FROM survey WHERE survey_id={survey_id}"
+    )
+    return _get_first_or_none(channel_name_suffix)
+
+
+def check_survey_exists(survey_id):
+    survey = _fetchone(f"SELECT survey_id from survey WHERE survey_id={survey_id}")
+    return _get_first_or_none(survey) is not None
+
+
+# Users which have previously answered on survey with answer which have this alias
+def find_all_answer_alias_responders(alias):
+    if (survey_answer_id := get_answer_alias_survey_answer_id(alias)) is not None:
+        query = f"SELECT user_id FROM user_survey_answer WHERE survey_answer_id={survey_answer_id}"
+        return [res[0] for res in _fetchall(query)]
+
+
 def get_survey_question_answers(question_id):
     return _fetchall(
         f"SELECT * FROM survey_answer WHERE survey_question_id={question_id}"

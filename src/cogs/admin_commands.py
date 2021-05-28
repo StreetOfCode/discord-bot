@@ -12,7 +12,8 @@ from config import (
     PING_UNANSWERED_SURVEY_OLDER_THAN,
     WELCOME_SURVEY_ID,
 )
-from utils import get_server
+from survey import create_channel, send_next_question, send_welcome_message
+from utils import get_member, get_server
 from welcome import welcome_member
 
 PING_UNANSWERED_SURVEY_MESSAGE = "Čauko, iba pripomínam, že čakám na tvoje odpovede :)"
@@ -126,3 +127,48 @@ class AdminCommands(commands.Cog):
             )
 
         await ctx.channel.send(embed=teams_embed)
+
+    @commands.command(name="send-survey")
+    @commands.has_role(ADMIN_ROLE_ID)
+    async def send_survey(self, ctx, survey_id):
+        """
+        Only member with admin role can run this command
+        Command sends survey (id of survey in first parameter) to all users who are survey-fans
+        (They answered in welcome quiz that they are ok with sending more surveys)
+        """
+
+        logging.info(f"Executing send-survey command for survey_id {survey_id}")
+
+        if db.check_survey_exists(survey_id):
+            survey_fans = db.find_all_answer_alias_responders("survey-fan")
+            users_who_started_survey = db.get_all_user_ids_from_survey_progress(
+                survey_id
+            )
+            final_users_to_send_survey_to = list(
+                set(survey_fans) - set(users_who_started_survey)
+            )
+
+            sent_to = []
+            for user_id in final_users_to_send_survey_to:
+                member = get_member(self.bot, user_id)
+
+                channel_name = f"{member.display_name}-{db.get_survey_channel_name_suffix(survey_id)}"
+                channel = await create_channel(
+                    get_server(self.bot), member, channel_name
+                )
+
+                intro_message = db.get_survey_intro_message(survey_id)
+                await send_welcome_message(channel, member, intro_message)
+
+                db.create_user_survey_progress(survey_id, member.id, channel.id)
+                await send_next_question(channel, member, survey_id)
+
+                sent_to.append(member.display_name)
+
+            await ctx.channel.send(f"Sent to {sent_to}")
+
+        else:
+            logging.info(
+                f"Calling send-survey command for survey_id {survey_id}, but this survey doesn't exist"
+            )
+            await ctx.channel.send(f"Survey with id {survey_id} wasn't found")
