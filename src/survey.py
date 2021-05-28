@@ -11,7 +11,7 @@ from db.columns import (
     COLUMN_SURVEY_QUESTION_ORDER,
     COLUMN_SURVEY_QUESTION_TEXT,
 )
-from log_utils import member_to_string
+from log_utils import channel_to_string, member_to_string
 from utils import get_role
 
 MULTIPLE_CHOICE_EMBED_DESCRIPTION = " Môžeš zvoliť viacero odpovedí!"
@@ -172,3 +172,33 @@ async def add_receive_role_if_exists(client, member, survey_id):
             f"Adding role ({survey_receive_role.name}) to user {member_to_string(member)}"
         )
         await member.add_roles(survey_receive_role)
+
+
+# Create channel which can be seen only by this member, bot and admins
+async def create_channel(guild, member, channel_name):
+    logging.info(f"Creating channel {channel_name} for {member_to_string(member)}.")
+    channel = await guild.create_text_channel(
+        channel_name,
+        overwrites={
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            member: discord.PermissionOverwrite(
+                view_channel=True, add_reactions=False, send_messages=False
+            ),
+            guild.me: discord.PermissionOverwrite(administrator=True),
+        },
+    )
+    logging.info(f"Created channel {channel_name} for {member_to_string(member)}.")
+    return channel
+
+
+async def send_welcome_message(channel, member, welcome_message):
+    logging.info(
+        f"Sending welcome message for {member_to_string(member)} to channel {channel_to_string(channel)}."
+    )
+
+    embed = discord.Embed(
+        title=f"Vitaj {member.display_name}",
+        colour=discord.Colour(0xFFFF00),
+        description=welcome_message,
+    )
+    await channel.send(embed=embed)
