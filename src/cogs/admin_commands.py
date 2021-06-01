@@ -151,6 +151,9 @@ class AdminCommands(commands.Cog):
             sent_to = []
             for user_id in final_users_to_send_survey_to:
                 member = get_member(self.bot, user_id)
+                if member is None:
+                    # member does not longer exist
+                    continue
 
                 channel_name = f"{member.display_name}-{db.get_survey_channel_name_suffix(survey_id)}"
                 channel = await create_channel(
