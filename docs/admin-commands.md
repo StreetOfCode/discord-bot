@@ -10,3 +10,11 @@ Pings (notifies) users who haven't completed a survey for longer than `PING_UNAN
 ## `/delete-finished-surveys-channels`
 
 Deletes channels of surveys, which have been finished for more than `DELETE_FINISHED_SURVEYS_OLDER_THAN`.
+
+## `/create-channel-teams {channel_id} {number_of_teams}`
+
+Creates balanced teams with users in given channel_id
+
+## `/send-survey {surve_id}`
+
+Sends survey (id of survey in first parameter) to all users who are survey-fans

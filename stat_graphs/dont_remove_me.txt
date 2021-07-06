@@ -1,0 +1,2 @@
+This is here so stat_graphs folder is definitely created in project. Otherwise if this file wasn't already in images folder and there were no graphs in it as well,
+this folder might not be found in stats command
