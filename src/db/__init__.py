@@ -2,6 +2,7 @@ import psycopg2
 
 import survey_status
 from config import DB_CONNECTION_STRING
+from db.columns import COLUMN_SURVEY_ANSWER_ID, COLUMN_SURVEY_ANSWER_TEXT
 
 db = psycopg2.connect(DB_CONNECTION_STRING)
 
@@ -222,6 +223,25 @@ def get_all_in_progress_users_with_channel_from_survey_progress_created_older_th
 def get_completed_survey_channel_ids_older_than(minus_interval):
     query = f"SELECT channel_id FROM user_survey_progress u WHERE status='{survey_status.FINISHED}' AND finished_at < (NOW() - INTERVAL '{minus_interval}')"
     return [res[0] for res in _fetchall(query)]
+
+
+def get_answer_ids_with_text_from_question_id(question_id):
+    """
+    Returns list of tuples - tuple(survey_answer_id, survey_answer_text)
+    """
+    return [
+        (res[COLUMN_SURVEY_ANSWER_ID], res[COLUMN_SURVEY_ANSWER_TEXT])
+        for res in get_survey_question_answers(question_id)
+    ]
+
+
+def get_user_answers_count(question_id, survey_answer_ids):
+    """
+    Returns list of tuples - tuple(survey_answer_id, count)
+    """
+    survey_answer_ids = ",".join(map(str, survey_answer_ids))
+    query = f"SELECT survey_answer_id, count(*) FROM user_survey_answer WHERE survey_question_id = {question_id} AND survey_answer_id IN ({survey_answer_ids}) GROUP BY survey_answer_id"
+    return [(res[0], res[1]) for res in _fetchall(query)]
 
 
 def _execute(query):

@@ -20,7 +20,10 @@ intents.members = True
 
 client = commands.Bot(command_prefix="/", intents=intents)
 
-_cogs = [cogs.admin_commands.AdminCommands(client)]
+_cogs = [
+    cogs.admin_commands.AdminCommands(client),
+    cogs.public_commands.PublicCommands(client),
+]
 for cog in _cogs:
     client.add_cog(cog)
 

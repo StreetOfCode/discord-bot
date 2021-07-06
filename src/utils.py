@@ -18,8 +18,12 @@ def get_server(client):
     return next(g for g in client.guilds if g.id == SERVER_ID)
 
 
-def has_role(member, role_name):
+def has_role_with_name(member, role_name):
     return role_name in [role.name for role in member.roles]
+
+
+def has_role_with_id(member, role_id):
+    return role_id in [role.id for role in member.roles]
 
 
 def get_role(client, name):
