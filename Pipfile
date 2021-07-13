@@ -13,6 +13,7 @@ discord = "*"
 psycopg2 = "*"
 python-dotenv = "*"
 yoyo-migrations = "*"
+matplotlib= "*"
 
 [requires]
 python_version = "3.9"
