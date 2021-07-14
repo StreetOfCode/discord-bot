@@ -4,9 +4,10 @@ import random
 
 import discord
 import matplotlib.pyplot as plt
+import pyimgur
 
 import db as db
-from config import ADMIN_ROLE_ID, BOT_COMMANDS_CHANNEL_ID, STAT_GRAPH_VALIDITY_DAYS
+from config import ADMIN_ROLE_ID, BOT_COMMANDS_CHANNEL_ID, IMGUR_CLIENT_ID
 from stats.available_stats import get_stats_help_info, stats_options
 from stats.stat_type import PERCENTAGE_BAR
 from utils import has_role_with_id
@@ -15,6 +16,8 @@ DEFAULT_GRAPH_SIZE = (10, 10)
 
 # color names from https://matplotlib.org/stable/gallery/color/named_colors.html
 COLORS = ("blue", "orange", "green", "purple", "pink", "yellow", "cyan", "grey")
+
+imgur = pyimgur.Imgur(IMGUR_CLIENT_ID)
 
 
 async def show_stats(ctx, stat_id):
@@ -33,11 +36,6 @@ async def show_stats(ctx, stat_id):
         return
 
     survey_question_id, stat_type, stat_title = stats_options[stat_id]
-
-    existing_graph = pathlib.Path(get_graph_path(stat_id))
-    if existing_graph.exists() and not is_graph_expired(existing_graph):
-        await send_graph_to_channel(ctx, stat_id, stat_title)
-        return
 
     if stat_type == PERCENTAGE_BAR:
         options, answers = get_options_and_their_counts(survey_question_id)
@@ -97,11 +95,7 @@ def make_percentage_graph(stat_id, options, answers, title, graph_size=None):
 
     print_percentages_above_graph_bars(graph, data)
 
-    plt.savefig(get_graph_path(stat_id), transparent=True)
-
-
-def get_graph_path(stat_id):
-    return f"../stat_graphs/{stat_id}.png"
+    plt.savefig(f"{stat_id}.png", transparent=True)
 
 
 def print_percentages_above_graph_bars(graph, data):
@@ -121,16 +115,10 @@ def print_percentages_above_graph_bars(graph, data):
 
 async def send_graph_to_channel(ctx, stat_id, stat_title):
     graph_embed = discord.Embed(title=stat_title, colour=discord.Colour(0xFFFF00))
-    file = discord.File(get_graph_path(stat_id), filename=f"{stat_id}.png")
-    graph_embed.set_image(url=f"attachment://{stat_id}.png")
-    await ctx.channel.send(embed=graph_embed, file=file)
+    graph_embed.set_image(url=upload_graph_to_imgur(stat_id))
+    await ctx.channel.send(embed=graph_embed)
 
 
-def is_graph_expired(existing_graph):
-    created_at_timestamp = existing_graph.stat().st_ctime
-    created_at_date = datetime.datetime.fromtimestamp(created_at_timestamp)
-
-    delta = datetime.timedelta(days=STAT_GRAPH_VALIDITY_DAYS)
-    now_minus_delta = datetime.datetime.now() - delta
-
-    return created_at_date < now_minus_delta
+def upload_graph_to_imgur(stat_id):
+    uploaded_image = imgur.upload_image(f"{stat_id}.png")
+    return uploaded_image.link
