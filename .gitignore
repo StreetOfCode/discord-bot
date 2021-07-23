@@ -131,3 +131,4 @@ dmypy.json
 config.yml
 /.idea/
 /yoyo-local.ini
+/yoyo.ini

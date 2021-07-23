@@ -29,7 +29,7 @@ class AdminCommands(commands.Cog):
     @commands.has_role(ADMIN_ROLE_ID)
     async def send_welcome_survey(self, ctx):
         """
-        Only member with admin role can run this command
+        Only member with admin role can run this command.
         Command sends welcome survey to all users who hasn't started survey and don't have admin role
         """
         sent_to = []
@@ -48,7 +48,7 @@ class AdminCommands(commands.Cog):
     @commands.has_role(ADMIN_ROLE_ID)
     async def ping_users_with_unanswered_questions(self, ctx):
         """
-        Only member with admin role can run this command
+        Only member with admin role can run this command.
         Command pings all users who have started welcome_survey (before interval) but haven't answered any questions
         """
         pinged = []
@@ -69,7 +69,7 @@ class AdminCommands(commands.Cog):
     @commands.has_role(ADMIN_ROLE_ID)
     async def delete_finished_surveys_channels(self, ctx):
         """
-        Only member with admin role can run this command
+        Only member with admin role can run this command.
         Command deletes channel of surveys which have been completed before DELETE_SURVEYS_OLDER_THAN
         """
         deleted_channels = []
@@ -132,7 +132,7 @@ class AdminCommands(commands.Cog):
     @commands.has_role(ADMIN_ROLE_ID)
     async def send_survey(self, ctx, survey_id):
         """
-        Only member with admin role can run this command
+        Only member with admin role can run this command.
         Command sends survey (id of survey in first parameter) to all users who are survey-fans
         (They answered in welcome quiz that they are ok with sending more surveys)
         """
@@ -175,3 +175,14 @@ class AdminCommands(commands.Cog):
                 f"Calling send-survey command for survey_id {survey_id}, but this survey doesn't exist"
             )
             await ctx.channel.send(f"Survey with id {survey_id} wasn't found")
+
+    @commands.command(name="clear-show-stats-cache")
+    @commands.has_role(ADMIN_ROLE_ID)
+    async def clear_show_stats_cache(self, ctx):
+        """
+        Only member with admin role can run this command.
+        Command deletes all rows from show_stats_cache db table
+        """
+        logging.info(f"Executing clear_show_stats_cache command")
+        db.remove_all_show_stats_cache()
+        await ctx.channel.send("Successfully cleared show_stats_cache")
