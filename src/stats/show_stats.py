@@ -1,13 +1,18 @@
 import datetime
-import pathlib
 import random
 
 import discord
 import matplotlib.pyplot as plt
 import pyimgur
+from requests import HTTPError
 
 import db as db
-from config import ADMIN_ROLE_ID, BOT_COMMANDS_CHANNEL_ID, IMGUR_CLIENT_ID
+from config import (
+    ADMIN_ROLE_ID,
+    BOT_COMMANDS_CHANNEL_ID,
+    IMGUR_CLIENT_ID,
+    STAT_GRAPH_VALIDITY_DAYS,
+)
 from stats.available_stats import get_stats_help_info, stats_options
 from stats.stat_type import PERCENTAGE_BAR
 from utils import has_role_with_id
@@ -37,6 +42,14 @@ async def show_stats(ctx, stat_id):
 
     survey_question_id, stat_type, stat_title = stats_options[stat_id]
 
+    if cached_stat := db.get_show_stats_updated_at_with_url_or_none(stat_id):
+        updated_at, url = cached_stat
+        if not is_graph_expired(updated_at):
+            await send_graph_to_channel(ctx, url, stat_title)
+            return
+        else:
+            db.remove_single_show_stats_cache(stat_id)
+
     if stat_type == PERCENTAGE_BAR:
         options, answers = get_options_and_their_counts(survey_question_id)
 
@@ -49,8 +62,11 @@ async def show_stats(ctx, stat_id):
         make_percentage_graph(
             stat_id, options, answers, stat_title, graph_size=graph_size
         )
-
-        await send_graph_to_channel(ctx, stat_id, stat_title)
+        if imgur_url := await upload_graph_to_imgur_or_none(stat_id):
+            db.add_show_stats_cache(stat_id, imgur_url)
+            await send_graph_to_channel(ctx, imgur_url, stat_title)
+        else:
+            await ctx.channel.send("Server preťažený, skús prosím neskôr.")
 
 
 def get_options_and_their_counts(survey_question_id):
@@ -96,6 +112,7 @@ def make_percentage_graph(stat_id, options, answers, title, graph_size=None):
     print_percentages_above_graph_bars(graph, data)
 
     plt.savefig(f"{stat_id}.png", transparent=True)
+    plt.clf()
 
 
 def print_percentages_above_graph_bars(graph, data):
@@ -113,12 +130,23 @@ def print_percentages_above_graph_bars(graph, data):
         i += 1
 
 
-async def send_graph_to_channel(ctx, stat_id, stat_title):
+async def send_graph_to_channel(ctx, url, stat_title):
     graph_embed = discord.Embed(title=stat_title, colour=discord.Colour(0xFFFF00))
-    graph_embed.set_image(url=upload_graph_to_imgur(stat_id))
+    graph_embed.set_image(url=url)
     await ctx.channel.send(embed=graph_embed)
 
 
-def upload_graph_to_imgur(stat_id):
-    uploaded_image = imgur.upload_image(f"{stat_id}.png")
-    return uploaded_image.link
+async def upload_graph_to_imgur_or_none(stat_id):
+    try:
+        uploaded_image = imgur.upload_image(f"{stat_id}.png")
+        return uploaded_image.link
+    # Imgur occasionally responds with 403 because their servers are overloaded
+    # there is nothing to do (except buy premium)
+    except HTTPError:
+        return None
+
+
+def is_graph_expired(updated_at):
+    delta = datetime.timedelta(days=STAT_GRAPH_VALIDITY_DAYS)
+    now_minus_delta = datetime.datetime.now(updated_at.tzinfo) - delta
+    return updated_at < now_minus_delta

@@ -21,6 +21,19 @@ def get_survey_question_order_or_none(question_id):
     return _get_first_or_none(question)
 
 
+def get_show_stats_updated_at_with_url_or_none(stat_id):
+    row = _fetchone(
+        f"SELECT updated_at, url FROM show_stats_cache WHERE stat_id = {stat_id}"
+    )
+    if row is None:
+        return None
+    return row[0], row[1]
+
+
+def add_show_stats_cache(stat_id, url):
+    _execute(f"INSERT INTO show_stats_cache(stat_id, url) VALUES({stat_id}, '{url}')")
+
+
 def get_next_survey_question(user_id, survey_id):
     query = f"""
         SELECT * FROM survey_question 
@@ -191,6 +204,14 @@ def remove_user_answer(user_id, survey_question_id, survey_answer_id):
     _execute(
         f"DELETE FROM user_survey_answer WHERE user_id={user_id} AND survey_question_id={survey_question_id} AND survey_answer_id={survey_answer_id}"
     )
+
+
+def remove_single_show_stats_cache(stat_id):
+    _execute(f"DELETE FROM show_stats_cache WHERE stat_id={stat_id}")
+
+
+def remove_all_show_stats_cache():
+    _execute(f"DELETE FROM show_stats_cache")
 
 
 def are_all_survey_questions_answered(user_id, survey_id):
