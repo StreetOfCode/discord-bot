@@ -143,9 +143,9 @@ def finish_user_survey_progress(survey_id, user_id):
     )
 
 
-def set_user_survey_progress_status_to_channel_deleted(channel_id):
+def set_user_survey_progress_status(channel_id, status):
     _execute(
-        f"UPDATE user_survey_progress SET status='{survey_status.FINISHED_CHANNEL_DELETED}' WHERE channel_id={channel_id}"
+        f"UPDATE user_survey_progress SET status='{status}' WHERE channel_id={channel_id}"
     )
 
 
@@ -243,6 +243,11 @@ def get_all_in_progress_users_with_channel_from_survey_progress_created_older_th
 
 def get_completed_survey_channel_ids_older_than(minus_interval):
     query = f"SELECT channel_id FROM user_survey_progress u WHERE status='{survey_status.FINISHED}' AND finished_at < (NOW() - INTERVAL '{minus_interval}')"
+    return [res[0] for res in _fetchall(query)]
+
+
+def get_in_progress_survey_channel_ids_older_than(minus_interval):
+    query = f"SELECT channel_id FROM user_survey_progress u WHERE status='{survey_status.IN_PROGRESS}' AND created_at < (NOW() - INTERVAL '{minus_interval}')"
     return [res[0] for res in _fetchall(query)]
 
 
