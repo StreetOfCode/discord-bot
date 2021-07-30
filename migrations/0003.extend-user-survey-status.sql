@@ -1,0 +1,1 @@
+ALTER TYPE user_survey_status_type ADD VALUE 'UNANSWERED_CHANNEL_DELETED';

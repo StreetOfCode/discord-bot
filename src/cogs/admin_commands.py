@@ -5,10 +5,12 @@ import discord.utils
 from discord.ext import commands
 
 import db as db
+import survey_status
 import teams as teams
 from config import (
     ADMIN_ROLE_ID,
     DELETE_FINISHED_SURVEYS_OLDER_THAN,
+    DELETE_UNANSWERED_SURVEYS_OLDER_THAN,
     PING_UNANSWERED_SURVEY_OLDER_THAN,
     WELCOME_SURVEY_ID,
 )
@@ -89,7 +91,40 @@ class AdminCommands(commands.Cog):
 
             logging.info(f"Deleting channel ({channel_id}).")
             await channel.delete()
-            db.set_user_survey_progress_status_to_channel_deleted(channel_id)
+            db.set_user_survey_progress_status(
+                channel_id, survey_status.FINISHED_CHANNEL_DELETED
+            )
+            deleted_channels.append(channel_id)
+
+        await ctx.channel.send(f"Deleted {len(deleted_channels)} channels.")
+
+    @commands.command(name="delete-unanswered-surveys-channels")
+    @commands.has_role(ADMIN_ROLE_ID)
+    async def delete_unanswered_surveys_channels(self, ctx):
+        """
+        Only member with admin role can run this command.
+        Command deletes channel of surveys which have been unanswered longer than DELETE_UNANSWERED_SURVEYS_OLDER_THAN
+        """
+        deleted_channels = []
+        logging.info(
+            f"Executing delete_unanswered_surveys_channels command. OLDER_THAN is set to {DELETE_UNANSWERED_SURVEYS_OLDER_THAN}"
+        )
+        unanswered_channel_ids = db.get_in_progress_survey_channel_ids_older_than(
+            DELETE_UNANSWERED_SURVEYS_OLDER_THAN
+        )
+        for channel_id in unanswered_channel_ids:
+            channel = self.bot.get_channel(channel_id)
+            if channel is None:
+                logging.info(
+                    f"Channel ({channel_id}) not found on server but is in survey progress."
+                )
+                continue
+
+            logging.info(f"Deleting channel ({channel_id}).")
+            await channel.delete()
+            db.set_user_survey_progress_status(
+                channel_id, survey_status.UNANSWERED_CHANNEL_DELETED
+            )
             deleted_channels.append(channel_id)
 
         await ctx.channel.send(f"Deleted {len(deleted_channels)} channels.")
