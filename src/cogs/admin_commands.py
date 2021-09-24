@@ -7,6 +7,7 @@ from discord.ext import commands
 import db as db
 import survey_status
 import teams as teams
+from channel import create_channel
 from config import (
     ADMIN_ROLE_ID,
     DELETE_FINISHED_SURVEYS_OLDER_THAN,
@@ -14,7 +15,7 @@ from config import (
     PING_UNANSWERED_SURVEY_OLDER_THAN,
     WELCOME_SURVEY_ID,
 )
-from survey import create_channel, send_next_question, send_welcome_message
+from survey import send_next_question, send_welcome_message
 from utils import get_member, get_server
 from welcome import welcome_member
 

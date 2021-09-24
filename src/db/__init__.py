@@ -14,6 +14,13 @@ def is_multiple_choice_survey_question(question_id):
     return question[0] if question is not None else False
 
 
+def is_open_ended_survey_question(question_id):
+    question = _fetchone(
+        f"SELECT is_open_ended FROM survey_question WHERE survey_question_id={question_id}"
+    )
+    return question[0] if question is not None else False
+
+
 def get_survey_question_order_or_none(question_id):
     question = _fetchone(
         f"SELECT _order FROM survey_question WHERE survey_question_id = {question_id}"
@@ -51,7 +58,7 @@ def get_next_survey_question(user_id, survey_id):
         return None, None
 
     answers = get_survey_question_answers(question[0])
-    if answers is None or len(answers) == 0:
+    if answers is None:
         return None, None
 
     return question, answers
@@ -155,6 +162,12 @@ def add_answer(user_id, survey_question_id, survey_answer_id):
     )
 
 
+def add_open_ended_answer(user_id, survey_question_id, answer, message_id):
+    _execute(
+        f"INSERT INTO user_survey_answer(user_id, survey_question_id, text, message_id) VALUES({user_id}, {survey_question_id}, '{answer}', {message_id})"
+    )
+
+
 def get_survey_intro_message(survey_id):
     query = f"SELECT survey_intro_message from survey WHERE survey_id={survey_id}"
     return _fetchone(query)[0]
@@ -172,6 +185,27 @@ def get_survey_question_id_or_none(message_id):
         f"SELECT survey_question_id FROM sent_survey_question WHERE message_id={message_id}"
     )
     return _get_first_or_none(question_id)
+
+
+def get_open_ended_question_id_from_answer_or_none(message_id):
+    question_id = _fetchone(
+        f"SELECT survey_question_id FROM user_survey_answer WHERE message_id={message_id}"
+    )
+    return _get_first_or_none(question_id)
+
+
+def get_current_survey_question_or_none(user_id, survey_id):
+    query = f"""
+        SELECT * FROM survey_question 
+        WHERE survey_id = {survey_id} 
+            AND survey_question_id 
+                IN (
+                    SELECT survey_question_id FROM sent_survey_question WHERE user_id = {user_id}
+                )
+        ORDER BY survey_question_id DESC
+        LIMIT 1
+    """
+    return _fetchone(query)
 
 
 def get_survey_id_from_user_survey_progress_or_none(user_id, channel_id):
@@ -194,16 +228,29 @@ def get_answer_id(survey_question_id, emoji):
 
 
 def get_answer_of_answered_survey_question_or_none(survey_question_id, user_id):
-    answer_id = _fetchone(
-        f"SELECT survey_answer_id FROM user_survey_answer WHERE survey_question_id={survey_question_id} AND user_id={user_id}"
+    result = _fetchone(
+        f"SELECT survey_answer_id, text FROM user_survey_answer WHERE survey_question_id={survey_question_id} AND user_id={user_id}"
     )
-    return _get_first_or_none(answer_id)
+
+    if result is None:
+        return None, None
+
+    return result
 
 
-def remove_user_answer(user_id, survey_question_id, survey_answer_id):
-    _execute(
-        f"DELETE FROM user_survey_answer WHERE user_id={user_id} AND survey_question_id={survey_question_id} AND survey_answer_id={survey_answer_id}"
-    )
+def remove_user_answer(
+    user_id, survey_question_id, survey_answer_id=None, survey_answer_text=None
+):
+    if survey_answer_id is not None:
+        _execute(
+            f"DELETE FROM user_survey_answer WHERE user_id={user_id} AND survey_question_id={survey_question_id} AND survey_answer_id={survey_answer_id}"
+        )
+    elif survey_answer_text is not None:
+        _execute(
+            f"DELETE FROM user_survey_answer WHERE user_id={user_id} AND survey_question_id={survey_question_id} AND text='{survey_answer_text}'"
+        )
+    else:
+        raise ValueError("Both survey_answer_id and survey_answer_text are None")
 
 
 def remove_single_show_stats_cache(stat_id):

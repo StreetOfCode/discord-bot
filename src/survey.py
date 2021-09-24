@@ -3,20 +3,22 @@ import logging
 import discord
 
 import db
+from channel import allow_sending_messages, forbid_sending_messages
 from db.columns import (
     COLUMN_ID,
     COLUMN_SURVEY_ANSWER_EMOJI,
     COLUMN_SURVEY_ANSWER_TEXT,
-    COLUMN_SURVEY_QUESTION_IS_MULTIPLE_CHOICE,
     COLUMN_SURVEY_QUESTION_ORDER,
     COLUMN_SURVEY_QUESTION_TEXT,
 )
 from log_utils import channel_to_string, member_to_string
+from question import get_question_description, is_question_open_ended
 from utils import get_role
 
-MULTIPLE_CHOICE_EMBED_DESCRIPTION = " Môžeš zvoliť viacero odpovedí!"
 SURVEY_FINISHED_MESSAGE = "Koniec dotazníka. Ďakujeme pekne 🙂"
 UNANSWERED_QUESTIONS_TEXT = "Ešte si neodpovedal/a na niektoré otázky, tak prosím odpovedz a potom znova klikni, že si odpovedal/a na všetky otázky. Otázky, na ktoré si neodpovedal/a:"
+OPEN_ENDED_ANSWER_CONFIRMATION = "Odpoveď zaznamenaná. Ak chceš odpoveď upraviť, uprav správu, v ktorej si odpoveď odoslal/a."
+OPEN_ENDED_ANSWER_EDIT_CONFIRMATION = "Odpoveď na otázku upravená."
 
 
 async def send_next_question(channel, member, survey_id, answered_question_id=None):
@@ -24,7 +26,7 @@ async def send_next_question(channel, member, survey_id, answered_question_id=No
 
     question, answers = db.get_next_survey_question(member.id, survey_id)
     if question is None or answers is None:
-        logging.info(f"Question ({question} or answers ({answers}) are null.")
+        logging.info(f"Question ({question}) or answers ({answers}) are null.")
         return
 
     if not _should_send_next_question(
@@ -33,10 +35,7 @@ async def send_next_question(channel, member, survey_id, answered_question_id=No
         logging.info(f"Not sending next question.")
         return
 
-    is_multiple_choice_question = question[COLUMN_SURVEY_QUESTION_IS_MULTIPLE_CHOICE]
-    description = (
-        MULTIPLE_CHOICE_EMBED_DESCRIPTION if is_multiple_choice_question else ""
-    )
+    description = get_question_description(question)
 
     question_embed = discord.Embed(
         title=question[COLUMN_SURVEY_QUESTION_TEXT],
@@ -52,6 +51,13 @@ async def send_next_question(channel, member, survey_id, answered_question_id=No
         )
 
     message = await channel.send(embed=question_embed)
+
+    # If the next question is an open-ended one, we need to allow the user to send messages into the channel.
+    # Editing messages is also forbidden, if the user can't send messages. This means that we can't remove the permission for
+    # message sending after the open-ended question has been answered because users wouldn't be able to edit
+    # their answers. Thus it will be possible to always send messages to a channel after an open-ended question has been sent.
+    if is_question_open_ended(question):
+        await allow_sending_messages(channel, member)
 
     db.add_sent_survey_question(member.id, question[COLUMN_ID], message.id)
 
@@ -93,43 +99,46 @@ async def remove_reaction_on_survey_answer(user_id, survey_id, question_id, emoj
 
     # TODO maybe improve with single query?
     answer_id = db.get_answer_id(question_id, emoji)
-    db.remove_user_answer(user_id, question_id, answer_id)
+    db.remove_user_answer(user_id, question_id, survey_answer_id=answer_id)
     logging.info(
         f"Removed reaction ({emoji}) from user ({user_id}) for survey ({survey_id}) question ({question_id})."
     )
 
 
-async def add_reaction_on_survey_answer(
-    client, member, survey_id, question_id, emoji, message
+async def add_survey_answer(
+    client, member, survey_id, question_id, message, is_open_ended, emoji=None
 ):
     logging.info(
-        f"Adding reaction ({emoji}) from user {member_to_string(member)} for survey ({survey_id}) question ({question_id})."
+        f"Adding survey answer ({emoji if emoji is not None else message.content}) from user {member_to_string(member)} for survey ({survey_id}) question ({question_id})."
     )
+
+    if is_open_ended and emoji is not None:
+        raise ValueError("Adding open ended survey answer with emoji being set.")
 
     if db.is_survey_progress_finished(survey_id, member.id):
         logging.info(
-            f"User {member_to_string(member)} survey ({survey_id}) already finished. Removing reaction from message."
+            f"User {member_to_string(member)} survey ({survey_id}) already finished."
         )
-        await message.remove_reaction(emoji, member)
+
+        if not is_open_ended:
+            await message.remove_reaction(emoji, member)
+
         return
 
-    existing_answer_to_question = db.get_answer_of_answered_survey_question_or_none(
-        question_id, member.id
+    had_existing_answer = await _try_remove_existing_answer(
+        member, survey_id, question_id, message, is_open_ended
     )
-    if (
-        not db.is_multiple_choice_survey_question(question_id)
-        and existing_answer_to_question is not None
-    ):
-        logging.info(
-            f"Removing existing answer from user {member_to_string(member)} for survey ({survey_id}) question ({question_id})."
-        )
-        # Remove answer from db
-        db.remove_user_answer(member.id, question_id, existing_answer_to_question)
-        # Remove reaction from answer
-        emoji_to_delete = db.get_emoji_from_survey_answer(existing_answer_to_question)
-        await message.remove_reaction(emoji_to_delete, member)
 
-    db.add_answer(member.id, question_id, db.get_answer_id(question_id, emoji))
+    if is_open_ended:
+        db.add_open_ended_answer(member.id, question_id, message.content, message.id)
+        response = (
+            OPEN_ENDED_ANSWER_EDIT_CONFIRMATION
+            if had_existing_answer
+            else OPEN_ENDED_ANSWER_CONFIRMATION
+        )
+        await message.channel.send(response)
+    else:
+        db.add_answer(member.id, question_id, db.get_answer_id(question_id, emoji))
 
     if db.are_all_survey_questions_answered(member.id, survey_id):
         logging.info(
@@ -142,12 +151,15 @@ async def add_reaction_on_survey_answer(
 
         logging.info(f"User {member_to_string(member)} finished survey ({survey_id}).")
 
+        await forbid_sending_messages(message.channel, member)
         await message.channel.send(SURVEY_FINISHED_MESSAGE)
     elif db.is_last_question(survey_id, question_id):
         logging.info(
             f"Sending unanswered questions to user {member_to_string(member)} on survey ({survey_id})."
         )
-        await message.remove_reaction(emoji, member)
+
+        if not is_open_ended:
+            await message.remove_reaction(emoji, member)
 
         unanswered_questions = db.get_unanswered_question_texts(survey_id, member.id)
 
@@ -160,8 +172,40 @@ async def add_reaction_on_survey_answer(
             colour=discord.Colour(0xFFFF00),
         )
         await message.channel.send(embed=embed)
-    elif existing_answer_to_question is None:
+    elif not had_existing_answer:
         await send_next_question(message.channel, member, survey_id, question_id)
+
+
+async def _try_remove_existing_answer(
+    member, survey_id, question_id, message, is_open_ended
+):
+    (
+        existing_answer_id,
+        existing_answer_text,
+    ) = db.get_answer_of_answered_survey_question_or_none(question_id, member.id)
+
+    has_existing_answer = (
+        existing_answer_id is not None or existing_answer_text is not None
+    )
+
+    if not db.is_multiple_choice_survey_question(question_id) and has_existing_answer:
+        logging.info(
+            f"Removing existing answer from user {member_to_string(member)} for survey ({survey_id}) question ({question_id})."
+        )
+
+        # Remove answer from db
+        db.remove_user_answer(
+            member.id,
+            question_id,
+            survey_answer_id=existing_answer_id,
+            survey_answer_text=existing_answer_text,
+        )
+        # Remove reaction from answer
+        if not is_open_ended:
+            emoji_to_delete = db.get_emoji_from_survey_answer(existing_answer_id)
+            await message.remove_reaction(emoji_to_delete, member)
+
+    return has_existing_answer
 
 
 # Add receive role if survey contains receive_role_after_finish
@@ -172,23 +216,6 @@ async def add_receive_role_if_exists(client, member, survey_id):
             f"Adding role ({survey_receive_role.name}) to user {member_to_string(member)}"
         )
         await member.add_roles(survey_receive_role)
-
-
-# Create channel which can be seen only by this member, bot and admins
-async def create_channel(guild, member, channel_name):
-    logging.info(f"Creating channel {channel_name} for {member_to_string(member)}.")
-    channel = await guild.create_text_channel(
-        channel_name,
-        overwrites={
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            member: discord.PermissionOverwrite(
-                view_channel=True, add_reactions=False, send_messages=False
-            ),
-            guild.me: discord.PermissionOverwrite(administrator=True),
-        },
-    )
-    logging.info(f"Created channel {channel_name} for {member_to_string(member)}.")
-    return channel
 
 
 async def send_welcome_message(channel, member, welcome_message):

@@ -3,6 +3,7 @@ import logging
 import db
 import survey
 import survey_status
+from channel import create_channel
 from config import WELCOME_SURVEY_ID
 from log_utils import member_to_string
 from utils import get_server
@@ -28,7 +29,7 @@ async def welcome_member(client, member):
         )
         db.clear_all_user_survey_progress(WELCOME_SURVEY_ID, member.id)
 
-    channel = await survey.create_channel(
+    channel = await create_channel(
         get_server(client), member, f"vitaj {member.display_name}"
     )
 
