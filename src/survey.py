@@ -224,7 +224,7 @@ async def send_welcome_message(channel, member, welcome_message):
     )
 
     embed = discord.Embed(
-        title=f"Vitaj {member.display_name}",
+        title=f"Ahoj {member.display_name}!",
         colour=discord.Colour(0xFFFF00),
         description=welcome_message,
     )
