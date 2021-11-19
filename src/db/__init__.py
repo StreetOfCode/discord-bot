@@ -163,9 +163,11 @@ def add_answer(user_id, survey_question_id, survey_answer_id):
 
 
 def add_open_ended_answer(user_id, survey_question_id, answer, message_id):
-    _execute(
-        f"INSERT INTO user_survey_answer(user_id, survey_question_id, text, message_id) VALUES({user_id}, {survey_question_id}, '{answer}', {message_id})"
-    )
+    with db, db.cursor() as cursor:
+        cursor.execute(
+            f"INSERT INTO user_survey_answer(user_id, survey_question_id, text, message_id) VALUES({user_id}, {survey_question_id}, %s, {message_id})",
+            (answer,),
+        )
 
 
 def get_survey_intro_message(survey_id):
