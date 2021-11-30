@@ -1,7 +1,12 @@
 from stats.stat_type import PERCENTAGE_BAR
 
+WIDE_GRAPH_STAT_IDS = ("7", "8", "9", "10", "11")
+
+# if only first X options from survey question should be in stats
+SHOW_ONLY_FIRST_X_OPTIONS_FROM_STAT = {"10": 3, "11": 3}
+
 # id of stat option to tuple(survey_question_id, stat_type, stat-stat_title)
-stats_options = {
+STATS_OPTIONS = {
     "1": (1, PERCENTAGE_BAR, "Pohlavie - percentuálny podiel"),
     "2": (2, PERCENTAGE_BAR, "Vek - percentuálny podiel"),
     "3": (3, PERCENTAGE_BAR, "Skill v programovaní - percentuálny podiel"),
@@ -23,6 +28,16 @@ stats_options = {
         PERCENTAGE_BAR,
         "Hodnotenie kvality audia v podcaste - percentuálny podiel",
     ),
+    "10": (
+        14,
+        PERCENTAGE_BAR,
+        "Epizódy o programovaní vs. epizódy o živote ako takom - percentuálny podiel",
+    ),
+    "11": (
+        15,
+        PERCENTAGE_BAR,
+        "Epizódy s hosťami - percentuálny podiel",
+    ),
 }
 
 stats_help = ""
@@ -35,6 +50,6 @@ def get_stats_help_info():
         return stats_help
     else:
         stats_help = "Zoznam dostupných štatistik je nižšie. Pre zobrazenie štatistiky spusti command /show-stats X, kde X je číslo štatistiky zo zoznamu nižšie. Napríklad /show-stats 3\n\n"
-        for option, (_, _, title) in stats_options.items():
+        for option, (_, _, title) in STATS_OPTIONS.items():
             stats_help += f"{option}. {title}\n"
         return stats_help

@@ -13,7 +13,12 @@ from config import (
     IMGUR_CLIENT_ID,
     STAT_GRAPH_VALIDITY_DAYS,
 )
-from stats.available_stats import get_stats_help_info, stats_options
+from stats.available_stats import (
+    SHOW_ONLY_FIRST_X_OPTIONS_FROM_STAT,
+    STATS_OPTIONS,
+    WIDE_GRAPH_STAT_IDS,
+    get_stats_help_info,
+)
 from stats.stat_type import PERCENTAGE_BAR
 from utils import has_role_with_id
 
@@ -36,11 +41,11 @@ async def show_stats(ctx, stat_id):
         await ctx.channel.send(get_stats_help_info())
         return
 
-    if stat_id not in stats_options:
+    if stat_id not in STATS_OPTIONS:
         await ctx.channel.send(f"Nevalidná možnosť - {stat_id}")
         return
 
-    survey_question_id, stat_type, stat_title = stats_options[stat_id]
+    survey_question_id, stat_type, stat_title = STATS_OPTIONS[stat_id]
 
     if cached_stat := db.get_show_stats_updated_at_with_url_or_none(stat_id):
         updated_at, url = cached_stat
@@ -51,12 +56,14 @@ async def show_stats(ctx, stat_id):
             db.remove_single_show_stats_cache(stat_id)
 
     if stat_type == PERCENTAGE_BAR:
-        options, answers = get_options_and_their_counts(survey_question_id)
+        options, answers = get_options_and_their_counts(
+            survey_question_id, SHOW_ONLY_FIRST_X_OPTIONS_FROM_STAT.get(stat_id)
+        )
 
         graph_size = (
             # these graphs have verbose answer_options therefore graphs need to be wider
             (25, 10)
-            if stat_id in ("7", "8", "9")
+            if stat_id in WIDE_GRAPH_STAT_IDS
             else DEFAULT_GRAPH_SIZE
         )
         make_percentage_graph(
@@ -69,13 +76,16 @@ async def show_stats(ctx, stat_id):
             await ctx.channel.send("Server preťažený, skús prosím neskôr.")
 
 
-def get_options_and_their_counts(survey_question_id):
+def get_options_and_their_counts(survey_question_id, only_first_x_answers=None):
     """
     i.e will return tuple (['muz', 'zena'], [15, 12]) as in 15 users answered as muz and 12 as zena
     """
     answer_ids_with_text = db.get_answer_ids_with_text_from_question_id(
         survey_question_id
     )
+    if only_first_x_answers is not None:
+        answer_ids_with_text = answer_ids_with_text[0:only_first_x_answers]
+
     answer_ids = [answer_id for answer_id, _ in answer_ids_with_text]
     answer_ids_with_count = db.get_user_answers_count(survey_question_id, answer_ids)
 
