@@ -92,7 +92,7 @@ def find_all_answer_alias_responders(alias):
 
 def get_survey_question_answers(question_id):
     return _fetchall(
-        f"SELECT * FROM survey_answer WHERE survey_question_id={question_id}"
+        f"SELECT * FROM survey_answer WHERE survey_question_id={question_id} ORDER BY survey_answer_id ASC"
     )
 
 
