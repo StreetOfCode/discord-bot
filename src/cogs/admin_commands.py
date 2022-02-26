@@ -9,7 +9,7 @@ import survey_status
 import teams as teams
 from channel import create_channel
 from config import (
-    ADMIN_ROLE_ID,
+    ADMINISTRATOR_ROLE_ID,
     DELETE_FINISHED_SURVEYS_OLDER_THAN,
     DELETE_UNANSWERED_SURVEYS_OLDER_THAN,
     PING_UNANSWERED_SURVEY_OLDER_THAN,
@@ -29,7 +29,7 @@ class AdminCommands(commands.Cog):
         self.bot = bot
 
     @commands.command(name="send-welcome-survey")
-    @commands.has_role(ADMIN_ROLE_ID)
+    @commands.has_role(ADMINISTRATOR_ROLE_ID)
     async def send_welcome_survey(self, ctx):
         """
         Only member with admin role can run this command.
@@ -42,13 +42,13 @@ class AdminCommands(commands.Cog):
         )
         for member in get_server(self.bot).members:
             if member != self.bot.user and member.id not in users_who_started_survey:
-                if discord.utils.get(member.roles, id=ADMIN_ROLE_ID) is None:
+                if discord.utils.get(member.roles, id=ADMINISTRATOR_ROLE_ID) is None:
                     await welcome_member(self.bot, member)
                     sent_to.append(member.display_name)
         await ctx.channel.send(f"Sent to {sent_to}")
 
     @commands.command(name="ping-unanswered-survey")
-    @commands.has_role(ADMIN_ROLE_ID)
+    @commands.has_role(ADMINISTRATOR_ROLE_ID)
     async def ping_users_with_unanswered_questions(self, ctx):
         """
         Only member with admin role can run this command.
@@ -69,7 +69,7 @@ class AdminCommands(commands.Cog):
         await ctx.channel.send(f"Pinged {len(pinged)} users: {pinged}")
 
     @commands.command(name="delete-finished-surveys-channels")
-    @commands.has_role(ADMIN_ROLE_ID)
+    @commands.has_role(ADMINISTRATOR_ROLE_ID)
     async def delete_finished_surveys_channels(self, ctx):
         """
         Only member with admin role can run this command.
@@ -100,7 +100,7 @@ class AdminCommands(commands.Cog):
         await ctx.channel.send(f"Deleted {len(deleted_channels)} channels.")
 
     @commands.command(name="delete-unanswered-surveys-channels")
-    @commands.has_role(ADMIN_ROLE_ID)
+    @commands.has_role(ADMINISTRATOR_ROLE_ID)
     async def delete_unanswered_surveys_channels(self, ctx):
         """
         Only member with admin role can run this command.
@@ -131,7 +131,7 @@ class AdminCommands(commands.Cog):
         await ctx.channel.send(f"Deleted {len(deleted_channels)} channels.")
 
     @commands.command(name="create-channel-teams")
-    @commands.has_role(ADMIN_ROLE_ID)
+    @commands.has_role(ADMINISTRATOR_ROLE_ID)
     async def create_channel_teams(self, ctx, channel_id, number_of_teams=2):
         logging.info(
             f"Executing create-channel-teams command. Channel ID: {channel_id}. Number of teams: {number_of_teams}."
@@ -165,7 +165,7 @@ class AdminCommands(commands.Cog):
         await ctx.channel.send(embed=teams_embed)
 
     @commands.command(name="send-survey")
-    @commands.has_role(ADMIN_ROLE_ID)
+    @commands.has_role(ADMINISTRATOR_ROLE_ID)
     async def send_survey(self, ctx, survey_id):
         """
         Only member with admin role can run this command.
@@ -213,7 +213,7 @@ class AdminCommands(commands.Cog):
             await ctx.channel.send(f"Survey with id {survey_id} wasn't found")
 
     @commands.command(name="clear-show-stats-cache")
-    @commands.has_role(ADMIN_ROLE_ID)
+    @commands.has_role(ADMINISTRATOR_ROLE_ID)
     async def clear_show_stats_cache(self, ctx):
         """
         Only member with admin role can run this command.

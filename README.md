@@ -51,7 +51,7 @@ type. E.g:
 - Enable the `bot` scope in `OAuth2` -> `SCOPES`, enable `BOT PERMISSIONS` -> `Administrator` and then navigate to the
   URL which reveals itself and add the bot to your server
 - Navigate back to applications, copy the bot `TOKEN` from `SETTINGS` -> `Bot` and paste it into your `.env` file
-- Create a `admin` role on your server and fill its ID into the `ADMIN_ROLE_ID` environment variable
+- Create a `administrator` role on your server and fill its ID into the `ADMINISTRATOR_ROLE_ID` environment variable
 
 ## Running locally
 

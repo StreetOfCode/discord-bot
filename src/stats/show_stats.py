@@ -8,7 +8,7 @@ from requests import HTTPError
 
 import db as db
 from config import (
-    ADMIN_ROLE_ID,
+    ADMINISTRATOR_ROLE_ID,
     BOT_COMMANDS_CHANNEL_ID,
     IMGUR_CLIENT_ID,
     STAT_GRAPH_VALIDITY_DAYS,
@@ -32,7 +32,7 @@ imgur = pyimgur.Imgur(IMGUR_CLIENT_ID)
 
 async def show_stats(ctx, stat_id):
     if ctx.channel.id != BOT_COMMANDS_CHANNEL_ID and not has_role_with_id(
-        ctx.author, ADMIN_ROLE_ID
+        ctx.author, ADMINISTRATOR_ROLE_ID
     ):
         await ctx.channel.send("Nesprávny channel")
         return
