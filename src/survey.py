@@ -62,7 +62,7 @@ async def send_next_question(channel, member, survey_id, answered_question_id=No
     db.add_sent_survey_question(member.id, question[COLUMN_ID], message.id)
 
     for answer in answers:
-        await message.add_reaction(emoji=answer[COLUMN_SURVEY_ANSWER_EMOJI])
+        await message.add_reaction(answer[COLUMN_SURVEY_ANSWER_EMOJI])
 
     logging.info(
         f"Sent next question ({question[COLUMN_ID]}) to {member_to_string(member)}."
