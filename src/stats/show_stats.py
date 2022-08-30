@@ -72,11 +72,6 @@ async def show_stats(ctx, stat_id):
         make_percentage_graph(
             stat_id, options, answers, stat_title, graph_size=graph_size
         )
-        if imgur_url := await upload_graph_to_imgur_or_none(stat_id):
-            db.add_show_stats_cache(stat_id, imgur_url)
-            await send_graph_to_channel(ctx, imgur_url, stat_title)
-        else:
-            await ctx.channel.send("Server preťažený, skús prosím neskôr.")
     elif stat_type == TIME_LINE_PLOT:
         join_dates = []
         
@@ -88,11 +83,11 @@ async def show_stats(ctx, stat_id):
 
         make_time_line_plot(stat_id, join_dates, stat_title)
 
-        if imgur_url := await upload_graph_to_imgur_or_none(stat_id):
+    if imgur_url := await upload_graph_to_imgur_or_none(stat_id):
             db.add_show_stats_cache(stat_id, imgur_url)
             await send_graph_to_channel(ctx, imgur_url, stat_title)
-        else:
-            await ctx.channel.send("Server preťažený, skús prosím neskôr.")
+    else:
+        await ctx.channel.send("Server preťažený, skús prosím neskôr.")
 
 
 def get_options_and_their_counts(survey_question_id, only_first_x_answers=None):
