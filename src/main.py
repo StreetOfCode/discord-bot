@@ -1,5 +1,5 @@
 import logging
-
+import asyncio
 import discord
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
@@ -7,7 +7,6 @@ from discord.ext.commands import CommandNotFound
 import cogs
 import db
 from config import TOKEN
-from db.columns import COLUMN_SURVEY_QUESTION_IS_OPEN_ENDED
 from question import is_question_open_ended
 from survey import add_survey_answer, remove_reaction_on_survey_answer
 from utils import get_server
@@ -19,15 +18,22 @@ logging.basicConfig(
 
 intents = discord.Intents.default()
 intents.members = True
+intents.messages = True
+intents.message_content = True
 
 client = commands.Bot(command_prefix="/", intents=intents)
 
-_cogs = [
-    cogs.admin_commands.AdminCommands(client),
-    cogs.public_commands.PublicCommands(client),
-]
-for cog in _cogs:
-    client.add_cog(cog)
+
+async def main():
+    _cogs = [
+        cogs.admin_commands.AdminCommands(client),
+        cogs.public_commands.PublicCommands(client),
+    ]
+    for cog in _cogs:
+        await client.add_cog(cog)
+
+    async with client:
+        await client.start(TOKEN)
 
 
 @client.event
@@ -185,4 +191,4 @@ async def on_message_edit(message_before, message_after):
                 logging.error(f"Error while adding survey answer. {e}")
 
 
-client.run(TOKEN)
+asyncio.run(main())
