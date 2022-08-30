@@ -1,4 +1,4 @@
-from stats.stat_type import PERCENTAGE_BAR
+from stats.stat_type import PERCENTAGE_BAR, TIME_LINE_PLOT
 
 WIDE_GRAPH_STAT_IDS = ("7", "8", "9", "10", "11")
 
@@ -37,6 +37,11 @@ STATS_OPTIONS = {
         15,
         PERCENTAGE_BAR,
         "Epizódy s hosťami - percentuálny podiel",
+    ),
+    "12": (
+        -1,
+        TIME_LINE_PLOT,
+        "Počet ľudí v discord serveri v čase"
     ),
 }
 
