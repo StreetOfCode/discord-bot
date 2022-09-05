@@ -38,11 +38,7 @@ STATS_OPTIONS = {
         PERCENTAGE_BAR,
         "Epizódy s hosťami - percentuálny podiel",
     ),
-    "12": (
-        -1,
-        TIME_LINE_PLOT,
-        "Počet ľudí v discord serveri v čase"
-    ),
+    "12": (-1, TIME_LINE_PLOT, "Počet ľudí v discord serveri v čase"),
 }
 
 stats_help = ""
