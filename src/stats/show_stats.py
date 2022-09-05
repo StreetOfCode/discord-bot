@@ -1,11 +1,12 @@
 import datetime
-from datetime import datetime as dt, timezone
 import random
 import time
+from datetime import datetime as dt
+from datetime import timezone
 
 import discord
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 import pyimgur
 from requests import HTTPError
 
@@ -22,7 +23,6 @@ from stats.available_stats import (
     WIDE_GRAPH_STAT_IDS,
     get_stats_help_info,
 )
-
 from stats.stat_type import PERCENTAGE_BAR, TIME_LINE_PLOT
 from utils import has_role_with_id
 
@@ -75,11 +75,11 @@ async def show_stats(ctx, stat_id):
         )
     elif stat_type == TIME_LINE_PLOT:
         join_dates = []
-        
+
         for member in ctx.guild.members:
             if not member.bot:
                 join_dates.append(member.joined_at)
-        
+
         join_dates.sort(key=lambda x: time.mktime(x.timetuple()))
 
         server_created = ctx.guild.created_at
@@ -94,7 +94,10 @@ async def show_stats(ctx, stat_id):
 
             member_count = len(
                 list(
-                    filter(lambda x: x <= current_step_date.replace(tzinfo=x.tzinfo), join_dates)
+                    filter(
+                        lambda x: x <= current_step_date.replace(tzinfo=x.tzinfo),
+                        join_dates,
+                    )
                 )
             )
 
@@ -103,8 +106,8 @@ async def show_stats(ctx, stat_id):
         make_time_line_plot(stat_id, data_points, data_values, stat_title)
 
     if imgur_url := await upload_graph_to_imgur_or_none(stat_id):
-            db.add_show_stats_cache(stat_id, imgur_url)
-            await send_graph_to_channel(ctx, imgur_url, stat_title)
+        db.add_show_stats_cache(stat_id, imgur_url)
+        await send_graph_to_channel(ctx, imgur_url, stat_title)
     else:
         await ctx.channel.send("Server preťažený, skús prosím neskôr.")
 
@@ -157,11 +160,12 @@ def make_percentage_graph(stat_id, options, answers, title, graph_size=None):
     plt.savefig(f"{stat_id}.png", transparent=True)
     plt.clf()
 
+
 def make_time_line_plot(stat_id, data_points, data_values, title, graph_size=None):
     plt.style.use("dark_background")
-    
+
     plt.figure(figsize=graph_size if graph_size else DEFAULT_GRAPH_SIZE)
-    
+
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%d. %m. %Y"))
     plt.gca().xaxis.set_major_locator(mdates.DayLocator())
 
