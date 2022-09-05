@@ -93,12 +93,13 @@ async def show_stats(ctx, stat_id):
             current_step_date = server_created + step * steps
 
             member_count = len(
-                list(filter(lambda x: x <= current_step_date, join_dates))
+                list(
+                    filter(lambda x: x <= current_step_date.replace(tzinfo=x.tzinfo), join_dates)
+                )
             )
 
             data_values.append(member_count)
             data_points.append(current_step_date)
-
         make_time_line_plot(stat_id, data_points, data_values, stat_title)
 
     if imgur_url := await upload_graph_to_imgur_or_none(stat_id):
