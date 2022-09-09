@@ -1,4 +1,4 @@
-from stats.stat_type import PERCENTAGE_BAR
+from stats.stat_type import PERCENTAGE_BAR, TIMELINE_PLOT
 
 WIDE_GRAPH_STAT_IDS = ("7", "8", "9", "10", "11")
 
@@ -38,6 +38,7 @@ STATS_OPTIONS = {
         PERCENTAGE_BAR,
         "Epizódy s hosťami - percentuálny podiel",
     ),
+    "12": (-1, TIMELINE_PLOT, "Počet ľudí na serveri"),
 }
 
 stats_help = ""
