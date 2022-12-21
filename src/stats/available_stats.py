@@ -1,6 +1,6 @@
 from stats.stat_type import PERCENTAGE_BAR, TIMELINE_PLOT
 
-WIDE_GRAPH_STAT_IDS = ("7", "8", "9", "10", "11")
+WIDE_GRAPH_STAT_IDS = ("7", "8", "9", "10", "11", "13", "16", "17")
 
 # if only first X options from survey question should be in stats
 SHOW_ONLY_FIRST_X_OPTIONS_FROM_STAT = {"10": 3, "11": 3}
@@ -39,6 +39,15 @@ STATS_OPTIONS = {
         "Epizódy s hosťami - percentuálny podiel",
     ),
     "12": (-1, TIMELINE_PLOT, "Počet ľudí na serveri"),
+    "13": (20, PERCENTAGE_BAR, "Odkiaľ ľudia poznajú SoC - percentuálny podiel"),
+    "14": (21, PERCENTAGE_BAR, "Používateľnosť sociálnych sietí - percentuálny podiel"),
+    "15": (22, PERCENTAGE_BAR, "Kde ľudia sledujú SoC - percentuálny podiel"),
+    "16": (
+        23,
+        PERCENTAGE_BAR,
+        "Odkiaľ ľudia chcú počuť SoC novinky  - percentuálny podiel",
+    ),
+    "17": (24, PERCENTAGE_BAR, "Kde sa najviac počúva podcast - percentuálny podiel"),
 }
 
 stats_help = ""
